@@ -6,6 +6,8 @@ const PokerGame = () => {
   const [computerHand, setComputerHand] = useState([]);
   const [pot, setPot] = useState(0);
   const [roundInProgress, setRoundInProgress] = useState(false);
+  const [playerBalance, setPlayerBalance] = useState(1000);
+  const [computerBalance, setComputerBalance] = useState(1000);
 
   useEffect(() => {
     initializeDeck();
@@ -59,7 +61,14 @@ const PokerGame = () => {
 
   // Function to handle placing a bet
   const placeBet = () => {
+    if (playerBalance < 10) {
+      alert('Insufficient balance!');
+      return;
+    }
+
     setPot(pot + 10); // Increment the pot by 10 (you can adjust the bet amount as needed)
+    setPlayerBalance(playerBalance - 10);
+    setComputerBalance(computerBalance - 10);
   };
 
   // Function to determine the winner based on hand strength
@@ -72,12 +81,17 @@ const PokerGame = () => {
 
     if (playerRank > computerRank) {
       alert('Player wins!');
+      setPlayerBalance(playerBalance + pot);
     } else if (playerRank < computerRank) {
       alert('Computer wins!');
+      setComputerBalance(computerBalance + pot);
     } else {
-      alert('It\'s a tie!');
+      alert("It's a tie!");
+      setPlayerBalance(playerBalance + pot / 2);
+      setComputerBalance(computerBalance + pot / 2);
     }
 
+    setPot(0);
     setRoundInProgress(false);
   };
 
@@ -132,6 +146,8 @@ const PokerGame = () => {
       </ul>
 
       <h2>Pot: ${pot}</h2>
+      <h2>Player Balance: ${playerBalance}</h2>
+      <h2>Computer Balance: ${computerBalance}</h2>
     </div>
   );
 };
