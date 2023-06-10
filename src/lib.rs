@@ -20,7 +20,9 @@ mod lottery {
     }
 
     pub fn create_lottery(ctx: Context<CreateLottery>, ticket_price: u64) -> Result<()> {
+        msg!("Creating lottery...");
         let lottery = &mut ctx.accounts.lottery;
+        msg!("Created lottery: {}", lottery.id);
         let master = &mut ctx.accounts.master;
         master.last_id += 1;
 
@@ -28,7 +30,6 @@ mod lottery {
         lottery.authority = ctx.accounts.authority.key();
         lottery.ticket_price = ticket_price;
 
-        msg!("Created lottery: {}", lottery.id);
         msg!("Authority: {}", lottery.authority);
         msg!("Ticket price: {}", lottery.ticket_price);
 
@@ -64,17 +65,8 @@ mod lottery {
         Ok(())
     }
 
-    pub fn pick_winner(ctx: Context<PickWinner>) -> Result<()> {
+    pub fn pick_winner(ctx: Context<PickWinner>, winner_id: u32) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
-
-        let clock = Clock::get()?;
-        let pseudo_random_number = (u64::from_le_bytes(
-            <[u8; 8]>::try_from(&hash(&clock.unix_timestamp.to_be_bytes()).to_bytes()[..8])
-                .unwrap(),
-        ) * clock.slot
-            % u32::MAX as u64) as u32;
-
-        let winner_id = (pseudo_random_number % lottery.last_ticket_id) + 1;
 
         lottery.winner_id = Some(winner_id);
 
@@ -83,7 +75,7 @@ mod lottery {
         Ok(())
     }
 
-    pub fn claim_prize(ctx: Context<ClaimPrize>, _lottery_id: u32, _tick_id: u32) -> Result<()> {
+    pub fn claim_prize(ctx: Context<ClaimPrize>, lottery_id: u32, ticket_id: u32) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
         let ticket = &ctx.accounts.ticket;
         let winner = &ctx.accounts.authority;
@@ -121,7 +113,7 @@ pub struct InitMaster<'info> {
 
 #[derive(Accounts)]
 pub struct CreateLottery<'info> {
-    #[account(init, payer = authority, space = 4 + 32 + 4 + 1 + 4 + 1 + 8, seeds = [LOTTERY_SEED.as_bytes(), &(master.last_id + 1).to_le_bytes()], bump,)]
+    #[account(init, payer = authority, space = 4 + 32 + 8 + 4 + 1 + 4 + 1 + 8, seeds = [LOTTERY_SEED.as_bytes(), &(master.last_id + 1).to_le_bytes()], bump,)]
     pub lottery: Account<'info, Lottery>,
 
     #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump,)]
@@ -175,9 +167,9 @@ pub struct Ticket {
 }
 
 #[derive(Accounts)]
-#[instruction(lottery_id:u32)]
+#[instruction(lottery_id: u32)]
 pub struct PickWinner<'info> {
-    #[account(mut, seeds = [LOTTERY_SEED.as_bytes(), &lottery_id.to_le_bytes()], bump,  has_one = authority)]
+    #[account(mut, seeds = [LOTTERY_SEED.as_bytes(), &lottery_id.to_le_bytes()], bump, has_one = authority)]
     pub lottery: Account<'info, Lottery>,
     pub authority: Signer<'info>,
 }
