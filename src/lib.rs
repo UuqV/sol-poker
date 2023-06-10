@@ -13,89 +13,89 @@ use crate::{constants::*, error::*};
 declare_id!("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU");
 
 #[program]
-mod lottery {
+mod table {
     use super::*;
     pub fn init_master(_ctx: Context<InitMaster>) -> Result<()> {
         Ok(())
     }
 
-    pub fn create_lottery(ctx: Context<CreateLottery>, ticket_price: u64) -> Result<()> {
-        msg!("Creating lottery...");
-        let lottery = &mut ctx.accounts.lottery;
-        msg!("Created lottery: {}", lottery.id);
+    pub fn create_table(ctx: Context<CreateTable>, bet_price: u64) -> Result<()> {
+        msg!("Creating table...");
+        let table = &mut ctx.accounts.table;
+        msg!("Created table: {}", table.id);
         let master = &mut ctx.accounts.master;
         master.last_id += 1;
 
-        lottery.id = master.last_id;
-        lottery.authority = ctx.accounts.authority.key();
-        lottery.ticket_price = ticket_price;
+        table.id = master.last_id;
+        table.authority = ctx.accounts.authority.key();
+        table.bet_price = bet_price;
 
-        msg!("Authority: {}", lottery.authority);
-        msg!("Ticket price: {}", lottery.ticket_price);
+        msg!("Authority: {}", table.authority);
+        msg!("Bet price: {}", table.bet_price);
 
         Ok(())
     }
 
-    pub fn buy_ticket(ctx: Context<BuyTicket>, lottery_id: u32) -> Result<()> {
-        let lottery = &mut ctx.accounts.lottery;
-        let ticket = &mut ctx.accounts.ticket;
+    pub fn buy_bet(ctx: Context<BuyBet>, table_id: u32) -> Result<()> {
+        let table = &mut ctx.accounts.table;
+        let bet = &mut ctx.accounts.bet;
         let buyer = &ctx.accounts.buyer;
 
-        if lottery.winner_id.is_some() {
-            return err!(error::LotteryError::WinnerAlreadyExists);
+        if table.winner_id.is_some() {
+            return err!(error::TableError::WinnerAlreadyExists);
         }
 
         invoke(
-            &transfer(&buyer.key(), &lottery.key(), lottery.ticket_price),
+            &transfer(&buyer.key(), &table.key(), table.bet_price),
             &[
                 buyer.to_account_info(),
-                lottery.to_account_info(),
+                table.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
             ],
         )?;
 
-        lottery.last_ticket_id += 1;
+        table.last_bet_id += 1;
 
-        ticket.lottery_id = lottery_id;
-        ticket.authority = buyer.key();
+        bet.table_id = table_id;
+        bet.authority = buyer.key();
 
-        msg!("Ticket id: {}", ticket.id);
-        msg!("Ticket authority: {}", ticket.authority);
+        msg!("Bet id: {}", bet.id);
+        msg!("Bet authority: {}", bet.authority);
 
         Ok(())
     }
 
     pub fn pick_winner(ctx: Context<PickWinner>, winner_id: u32) -> Result<()> {
-        let lottery = &mut ctx.accounts.lottery;
+        let table = &mut ctx.accounts.table;
 
-        lottery.winner_id = Some(winner_id);
+        table.winner_id = Some(winner_id);
 
         msg!("Winner id:{}", winner_id);
 
         Ok(())
     }
 
-    pub fn claim_prize(ctx: Context<ClaimPrize>, lottery_id: u32, ticket_id: u32) -> Result<()> {
-        let lottery = &mut ctx.accounts.lottery;
-        let ticket = &ctx.accounts.ticket;
+    pub fn claim_prize(ctx: Context<ClaimPrize>, table_id: u32, bet_id: u32) -> Result<()> {
+        let table = &mut ctx.accounts.table;
+        let bet = &ctx.accounts.bet;
         let winner = &ctx.accounts.authority;
 
-        let prize = lottery
-            .ticket_price
-            .checked_mul(lottery.last_ticket_id.into())
+        let prize = table
+            .bet_price
+            .checked_mul(table.last_bet_id.into())
             .unwrap();
 
-        **lottery.to_account_info().try_borrow_mut_lamports()? -= prize;
+        **table.to_account_info().try_borrow_mut_lamports()? -= prize;
         **winner.to_account_info().try_borrow_mut_lamports()? += prize;
 
-        lottery.claimed = true;
+        table.claimed = true;
 
         msg!(
-            "{} claimed {} lamports from lottery id {} with ticket id {}",
+            "{} claimed {} lamports from table id {} with bet id {}",
             winner.key(),
             prize,
-            lottery.id,
-            ticket.id
+            table.id,
+            bet.id
         );
 
         Ok(())
@@ -112,9 +112,9 @@ pub struct InitMaster<'info> {
 }
 
 #[derive(Accounts)]
-pub struct CreateLottery<'info> {
-    #[account(init, payer = authority, space = 4 + 32 + 8 + 4 + 1 + 4 + 1 + 8, seeds = [LOTTERY_SEED.as_bytes(), &(master.last_id + 1).to_le_bytes()], bump,)]
-    pub lottery: Account<'info, Lottery>,
+pub struct CreateTable<'info> {
+    #[account(init, payer = authority, space = 4 + 32 + 8 + 4 + 1 + 4 + 1 + 8, seeds = [TABLE_SEED.as_bytes(), &(master.last_id + 1).to_le_bytes()], bump,)]
+    pub table: Account<'info, Table>,
 
     #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump,)]
     pub master: Account<'info, Master>,
@@ -130,28 +130,28 @@ pub struct Master {
 }
 
 #[account]
-pub struct Lottery {
+pub struct Table {
     pub id: u32,
     pub authority: Pubkey,
-    pub ticket_price: u64,
-    pub last_ticket_id: u32,
+    pub bet_price: u64,
+    pub last_bet_id: u32,
     pub winner_id: Option<u32>,
     pub claimed: bool,
 }
 
 #[derive(Accounts)]
-#[instruction(lottery_id:u32)]
-pub struct BuyTicket<'info> {
-    #[account(mut, seeds = [LOTTERY_SEED.as_bytes(), &lottery_id.to_le_bytes()], bump,)]
-    pub lottery: Account<'info, Lottery>,
+#[instruction(table_id:u32)]
+pub struct BuyBet<'info> {
+    #[account(mut, seeds = [TABLE_SEED.as_bytes(), &table_id.to_le_bytes()], bump,)]
+    pub table: Account<'info, Table>,
 
     #[account(
         init,
         payer = buyer,
         space = 4 + 4 + 32 + 8,
-        seeds = [TICKET_SEED.as_bytes(), lottery.key().as_ref(), &(lottery.last_ticket_id + 1).to_le_bytes()], bump,
+        seeds = [BET_SEED.as_bytes(), table.key().as_ref(), &(table.last_bet_id + 1).to_le_bytes()], bump,
     )]
-    pub ticket: Account<'info, Ticket>,
+    pub bet: Account<'info, Bet>,
 
     #[account(mut)]
     pub buyer: Signer<'info>,
@@ -160,28 +160,28 @@ pub struct BuyTicket<'info> {
 }
 
 #[account]
-pub struct Ticket {
+pub struct Bet {
     pub id: u32,
     pub authority: Pubkey,
-    pub lottery_id: u32,
+    pub table_id: u32,
 }
 
 #[derive(Accounts)]
-#[instruction(lottery_id: u32)]
+#[instruction(table_id: u32)]
 pub struct PickWinner<'info> {
-    #[account(mut, seeds = [LOTTERY_SEED.as_bytes(), &lottery_id.to_le_bytes()], bump, has_one = authority)]
-    pub lottery: Account<'info, Lottery>,
+    #[account(mut, seeds = [TABLE_SEED.as_bytes(), &table_id.to_le_bytes()], bump, has_one = authority)]
+    pub table: Account<'info, Table>,
     pub authority: Signer<'info>,
 }
 
 #[derive(Accounts)]
-#[instruction(lottery_id:u32, ticket_id: u32)]
+#[instruction(table_id:u32, bet_id: u32)]
 pub struct ClaimPrize<'info> {
-    #[account(mut, seeds = [LOTTERY_SEED.as_bytes(), &lottery_id.to_le_bytes()], bump,)]
-    pub lottery: Account<'info, Lottery>,
+    #[account(mut, seeds = [TABLE_SEED.as_bytes(), &table_id.to_le_bytes()], bump,)]
+    pub table: Account<'info, Table>,
 
-    #[account(mut, seeds = [TICKET_SEED.as_bytes(), lottery.key().as_ref(), &ticket_id.to_le_bytes()], bump, has_one = authority)]
-    pub ticket: Account<'info, Ticket>,
+    #[account(mut, seeds = [BET_SEED.as_bytes(), table.key().as_ref(), &bet_id.to_le_bytes()], bump, has_one = authority)]
+    pub bet: Account<'info, Bet>,
 
     #[account(mut)]
     pub authority: Signer<'info>,
