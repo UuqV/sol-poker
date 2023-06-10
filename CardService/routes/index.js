@@ -51,12 +51,12 @@ router.get('/hand/', function(req, res, next) {
       }
   
       const playerCards = deck.splice(0, 2);
-      return {playerCards}
+      return playerCards;
     };
 
   const cards = dealInitialCards();
   hands.push(cards);
-  res.send(cards.flat());
+  res.send(cards);
 });
 
 router.get('/flop/', function(req, res, next) {
@@ -95,6 +95,50 @@ router.get('/river/', function(req, res, next) {
   commonCards.push(cards);
   commonCards = commonCards.flat();
   res.send(commonCards);
+});
+
+router.get('/winner/', function(req, res, next) {
+  
+
+  // Function to determine the winner based on hand strength
+  const determineWinner = () => {
+    // You can implement your own hand evaluation logic here
+    // For simplicity, let's assume the player wins if they have a higher rank than the computer
+
+    let winner;
+    let otherWinners = [];
+    hands.forEach((hand) => {
+      const playerRank = getPlayerHandRank(hand);
+      if (!winner) {
+        winner = hand;
+        return;
+      }
+      const winnerRank = getPlayerHandRank(winner);
+      
+      if (playerRank > winnerRank) {
+        winner = hand;
+      } else if (playerRank === winnerRank) {
+        otherWinners.push(player);
+      }
+
+    })
+    return [winner, otherWinners].flat();
+  };
+
+  // Helper function to calculate the rank of the player's hand (for simplicity, let's just use the highest card rank)
+  const getPlayerHandRank = (hand) => {
+    const ranks = hand.map((card) => card.rank);
+    const maxRank = Math.max(...ranks);
+    return maxRank;
+  };
+
+  const result = determineWinner();
+
+  deck = initializeDeck();
+
+  hands = [];
+  commonCards = [];
+  res.send(result);
 });
 
 module.exports = router;
