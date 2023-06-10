@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import SolBalance from '../SolBalance';
 
-const PokerGame = () => {
+const PokerGame = ({ walletAddress }) => {
   const [deck, setDeck] = useState([]);
   const [playerHand, setPlayerHand] = useState([]);
   const [computerHand, setComputerHand] = useState([]);
@@ -146,7 +147,7 @@ const PokerGame = () => {
       </ul>
 
       <h2>Pot: ${pot}</h2>
-      <h2>Player Balance: ${playerBalance}</h2>
+      <SolBalance userName="Player" walletAddress={walletAddress} />
       <h2>Computer Balance: ${computerBalance}</h2>
     </div>
   );

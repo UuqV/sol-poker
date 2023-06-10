@@ -22,6 +22,7 @@ const App = () => {
             'Connected with Public Key:',
             response.publicKey.toString()
           );
+          console.log('window.solana-----', window.solana)
           /*
            * Set the user's publicKey in state to be used later!
            */
@@ -80,7 +81,7 @@ const App = () => {
           {!walletAddress && renderNotConnectedContainer()}
         </div>
         {/* Check for walletAddress and then pass in walletAddress */}
-        {walletAddress && <PokerGame walletAddress={window.solana} />}
+        {walletAddress && <PokerGame walletAddress={walletAddress} />}
         <div className="footer-container">
         </div>
       </div>
