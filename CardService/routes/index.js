@@ -56,7 +56,7 @@ router.get('/hand/', function(req, res, next) {
 
   const cards = dealInitialCards();
   hands.push(cards);
-  res.send(cards);
+  res.send(cards.flat());
 });
 
 router.get('/flop/', function(req, res, next) {
@@ -74,7 +74,8 @@ router.get('/flop/', function(req, res, next) {
 
   const cards = dealFlop();
   commonCards.push(cards);
-  res.send({commonCards});
+  commonCards = commonCards.flat();
+  res.send(commonCards);
 });
 
 router.get('/river/', function(req, res, next) {
@@ -92,7 +93,8 @@ router.get('/river/', function(req, res, next) {
 
   const cards = dealFlop();
   commonCards.push(cards);
-  res.send({commonCards});
+  commonCards = commonCards.flat();
+  res.send(commonCards);
 });
 
 module.exports = router;
