@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 import { Program, AnchorProvider, web3, Wallet } from '@project-serum/anchor';
+// const { publicKey, struct, u64, u8, option, } = require('@project-serum/borsh')
 import SolBalance from '../SolBalance';
+import IDL from "./idl.json";
 
 
 // SystemProgram is a reference to the Solana runtime!
@@ -11,7 +13,7 @@ const { SystemProgram, Keypair } = web3;
 let baseAccount = Keypair.generate();
 
 // This is the address of your solana program, if you forgot, just run solana address -k target/deploy/myepicproject-keypair.json
-const programID = new PublicKey("HHNCrJuKVtzRPuD3DVpcXkQA8dCuQ1U1KPntS9VKxFd7");
+const programID = new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU");
 
 // Set our network to devnet.
 const network = clusterApiUrl('devnet');
@@ -39,7 +41,9 @@ const PokerGame = ({ walletAddress }) => {
     const provider = new AnchorProvider(
       connection, window.solana, opts.preflightCommitment,
     );
+    console.log('provider',provider);
     return provider;
+    
   }
 
   // Function to initialize the deck of cards
@@ -62,11 +66,19 @@ const PokerGame = ({ walletAddress }) => {
   const getProgram = async () => {
     // Get metadata about your solana program
     console.log('programID',programID);
-    const idl = await Program.fetchIdl(programID, getProvider());
-    console.log('idl------');
-    console.log(idl);
+    // const idl = await Program.fetchIdl(programID, getProvider());
+    // console.log('idl------');
+    // console.log(idl);
+
     // Create a program that you can call
-    return new Program(idl, programID, getProvider());
+    return new Program(IDL, programID, getProvider());
+  };
+
+
+  const getTableAddress = async () => {
+    return (
+      await PublicKey.findProgramAddress([Buffer.from('table')], programID)
+    )[0];
   };
 
   const initializePot = async () => {
@@ -76,13 +88,15 @@ const PokerGame = ({ walletAddress }) => {
 
       // Fetch the program account data
       const accountInfo = await connection.getAccountInfo(new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"));
+      const program = await getProgram();
+      console.log('program', program);
       console.log('accountInfo', accountInfo);
       console.log(accountInfo.data.toString());
       const keypair = Keypair.generate(); // Generate a new key pair
       const privateKey = keypair.secretKey;
       console.log('Private Key:', privateKey);
       // Initialize the anchor workspace
-      const provider = AnchorProvider.local();
+      // const provider = AnchorProvider.local();
 
       // Set the provider's connection
       // provider.connection = connection;
@@ -91,9 +105,13 @@ const PokerGame = ({ walletAddress }) => {
 
       // // Create an anchor program instance
       // const program = new Program("Poker", new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"), provider);
-
+      const table_address = await getTableAddress();
+      console.log("table_address",table_address);
       // // Call the desired program function
-      // await program.rpc.create_round();
+      const accounts = await connection.getParsedProgramAccounts(programID);
+      console.log(accounts);
+      const create_round = await program.rpc.createRound();
+      console.log('create_round', create_round)
 
       // Perform additional operations if needed
 
