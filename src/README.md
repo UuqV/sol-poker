@@ -3,21 +3,21 @@
 List of args and accounts needed for each smart contract method.
 
 The "House" represents the casino, with treasury and signing authority.
-The "Player" represents a seat at the table, the user's wallet.
+The "Player" represents a seat at the round, the user's wallet.
 
-# initDealer
-Master account governing rounds at tables.
+# initTable
+Master account governing rounds at rounds. You should just fetch these tables instead of using this function.
 
 Accounts:
 ```
-newAccount: seed: 'dealer'
+newAccount: seed: 'table'
 payer: House
 ```
 Example Objects:
 ```
 [
   {
-    "publicKey": Pubkey from dealer seed,
+    "publicKey": Pubkey from table seed,
     "account": {
       "lastId": 1
     }
@@ -25,8 +25,8 @@ Example Objects:
 ]
 ```
 
-# createTable
-Represents a game at a table. Currently only supports a single round of betting.
+# createRound
+Represents a game at a round. Currently only supports a single round of betting.
 
 args:
 ```
@@ -34,15 +34,15 @@ betPrice: "Big Blind" bet in lamports
 ```
 Accounts:
 ```
-table: seed 'table' + (u32: dealer's lastId + 1)
-dealer: from initDealer
+round: seed 'round' + (u32: table's lastId + 1)
+table: from initTable
 house: house
 ```
 Example Objects:
 ```
 [
   {
-    "publicKey": Pubkey from table seed,
+    "publicKey": Pubkey from round seed,
     "account": {
       "id": 1,
       "house": House,
@@ -53,7 +53,7 @@ Example Objects:
     }
   },
   {
-    "publicKey": Pubkey from table seed,
+    "publicKey": Pubkey from round seed,
     "account": {
       "id": 2,
       "house": House,
@@ -67,15 +67,16 @@ Example Objects:
 ```
 
 # buyBet:
-Represents a bet posted at a table.
+Represents a bet posted at a round.
 
 args:
 ```
-tableId: from createTable
+roundId: id from createRound
 ```
 Accounts:
 ```
-bet: seed 'bet' + table Pubkey + (u32: lastBetId from Table + 1)
+round: from createRound
+bet: seed 'bet' + round Pubkey + (u32: lastBetId from Round + 1)
 buyer: Player
 ```
 Example Objects:
@@ -86,7 +87,7 @@ Example Objects:
     "account": {
       "id": 1,
       "house": House,
-      "tableId": 2
+      "roundId": 2
     }
   },
   {
@@ -94,7 +95,7 @@ Example Objects:
     "account": {
       "id": 2,
       "house": House,
-      "tableId": 2
+      "roundId": 2
     }
   },
   {
@@ -102,7 +103,7 @@ Example Objects:
     "account": {
       "id": 3,
       "house": House,
-      "tableId": 2
+      "roundId": 2
     }
   },
   {
@@ -110,24 +111,24 @@ Example Objects:
     "account": {
       "id": 4,
       "house": House,
-      "tableId": 2
+      "roundId": 2
     }
   }
 ]
 ```
 
-# claimPrize:
+# claimPot:
 Distributes the pot to a given bet owner.
 
 args:
 ```
-tableId: from createTable
+roundId: from createRound
 betId: from createBet
 ```
 
 Accounts:
 ```
-table: from createTable
+round: from createRound
 bet: from createBet
 house: House
 ```
