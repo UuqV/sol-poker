@@ -15,7 +15,7 @@ declare_id!("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU");
 #[program]
 mod table {
     use super::*;
-    pub fn init_master(_ctx: Context<InitMaster>) -> Result<()> {
+    pub fn init_dealer(_ctx: Context<InitDealer>) -> Result<()> {
         Ok(())
     }
 
@@ -23,14 +23,14 @@ mod table {
         msg!("Creating table...");
         let table = &mut ctx.accounts.table;
         msg!("Created table: {}", table.id);
-        let master = &mut ctx.accounts.master;
-        master.last_id += 1;
+        let dealer = &mut ctx.accounts.dealer;
+        dealer.last_id += 1;
 
-        table.id = master.last_id;
-        table.authority = ctx.accounts.authority.key();
+        table.id = dealer.last_id;
+        table.house = ctx.accounts.house.key();
         table.bet_price = bet_price;
 
-        msg!("Authority: {}", table.authority);
+        msg!("House: {}", table.house);
         msg!("Bet price: {}", table.bet_price);
 
         Ok(())
@@ -57,10 +57,10 @@ mod table {
         table.last_bet_id += 1;
 
         bet.table_id = table_id;
-        bet.authority = buyer.key();
+        bet.id = table.last_bet_id;
+        bet.house = buyer.key();
 
         msg!("Bet id: {}", bet.id);
-        msg!("Bet authority: {}", bet.authority);
 
         Ok(())
     }
@@ -75,25 +75,27 @@ mod table {
         Ok(())
     }
 
-    pub fn claim_prize(ctx: Context<ClaimPrize>, table_id: u32, bet_id: u32) -> Result<()> {
+    pub fn claim_pot(ctx: Context<ClaimPot>, table_id: u32, bet_id: u32) -> Result<()> {
         let table = &mut ctx.accounts.table;
         let bet = &ctx.accounts.bet;
-        let winner = &ctx.accounts.authority;
+        let winner = &ctx.accounts.house;
 
-        let prize = table
+        table.winner_id = Some(bet.id);
+
+        let pot = table
             .bet_price
             .checked_mul(table.last_bet_id.into())
             .unwrap();
 
-        **table.to_account_info().try_borrow_mut_lamports()? -= prize;
-        **winner.to_account_info().try_borrow_mut_lamports()? += prize;
+        **table.to_account_info().try_borrow_mut_lamports()? -= pot;
+        **winner.to_account_info().try_borrow_mut_lamports()? += pot;
 
         table.claimed = true;
 
         msg!(
             "{} claimed {} lamports from table id {} with bet id {}",
             winner.key(),
-            prize,
+            pot,
             table.id,
             bet.id
         );
@@ -103,9 +105,9 @@ mod table {
 }
 
 #[derive(Accounts)]
-pub struct InitMaster<'info> {
-    #[account(init, payer = payer, space = 4 + 8, seeds = [MASTER_SEED.as_bytes()], bump,)]
-    pub new_account: Account<'info, Master>,
+pub struct InitDealer<'info> {
+    #[account(init, payer = payer, space = 4 + 8, seeds = [DEALER_SEED.as_bytes()], bump,)]
+    pub new_account: Account<'info, Dealer>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -113,26 +115,26 @@ pub struct InitMaster<'info> {
 
 #[derive(Accounts)]
 pub struct CreateTable<'info> {
-    #[account(init, payer = authority, space = 4 + 32 + 8 + 4 + 1 + 4 + 1 + 8, seeds = [TABLE_SEED.as_bytes(), &(master.last_id + 1).to_le_bytes()], bump,)]
+    #[account(init, payer = house, space = 4 + 32 + 8 + 4 + 1 + 4 + 1 + 8, seeds = [TABLE_SEED.as_bytes(), &(dealer.last_id + 1).to_le_bytes()], bump,)]
     pub table: Account<'info, Table>,
 
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump,)]
-    pub master: Account<'info, Master>,
+    #[account(mut, seeds = [DEALER_SEED.as_bytes()], bump,)]
+    pub dealer: Account<'info, Dealer>,
 
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub house: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
 #[account]
-pub struct Master {
+pub struct Dealer {
     pub last_id: u32,
 }
 
 #[account]
 pub struct Table {
     pub id: u32,
-    pub authority: Pubkey,
+    pub house: Pubkey,
     pub bet_price: u64,
     pub last_bet_id: u32,
     pub winner_id: Option<u32>,
@@ -162,29 +164,29 @@ pub struct BuyBet<'info> {
 #[account]
 pub struct Bet {
     pub id: u32,
-    pub authority: Pubkey,
+    pub house: Pubkey,
     pub table_id: u32,
 }
 
 #[derive(Accounts)]
 #[instruction(table_id: u32)]
 pub struct PickWinner<'info> {
-    #[account(mut, seeds = [TABLE_SEED.as_bytes(), &table_id.to_le_bytes()], bump, has_one = authority)]
+    #[account(mut, seeds = [TABLE_SEED.as_bytes(), &table_id.to_le_bytes()], bump, has_one = house)]
     pub table: Account<'info, Table>,
-    pub authority: Signer<'info>,
+    pub house: Signer<'info>,
 }
 
 #[derive(Accounts)]
 #[instruction(table_id:u32, bet_id: u32)]
-pub struct ClaimPrize<'info> {
+pub struct ClaimPot<'info> {
     #[account(mut, seeds = [TABLE_SEED.as_bytes(), &table_id.to_le_bytes()], bump,)]
     pub table: Account<'info, Table>,
 
-    #[account(mut, seeds = [BET_SEED.as_bytes(), table.key().as_ref(), &bet_id.to_le_bytes()], bump, has_one = authority)]
+    #[account(mut, seeds = [BET_SEED.as_bytes(), table.key().as_ref(), &bet_id.to_le_bytes()], bump, has_one = house)]
     pub bet: Account<'info, Bet>,
 
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub house: Signer<'info>,
 
     pub system_program: Program<'info, System>,
 }
