@@ -1,5 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { Program, AnchorProvider, web3, Wallet } from '@project-serum/anchor';
 import SolBalance from '../SolBalance';
+
+
+// SystemProgram is a reference to the Solana runtime!
+const { SystemProgram, Keypair } = web3;
+
+// Create a keypair for the account that will hold the GIF data.
+let baseAccount = Keypair.generate();
+
+// This is the address of your solana program, if you forgot, just run solana address -k target/deploy/myepicproject-keypair.json
+const programID = new PublicKey("HHNCrJuKVtzRPuD3DVpcXkQA8dCuQ1U1KPntS9VKxFd7");
+
+// Set our network to devnet.
+const network = clusterApiUrl('devnet');
+
+// Controls how we want to acknowledge when a transaction is "done".
+const opts = {
+  preflightCommitment: "processed"
+}
 
 const PokerGame = ({ walletAddress }) => {
   const [deck, setDeck] = useState([]);
@@ -13,6 +33,14 @@ const PokerGame = ({ walletAddress }) => {
   useEffect(() => {
     initializeDeck();
   }, []);
+
+  const getProvider = () => {
+    const connection = new Connection(network, opts.preflightCommitment);
+    const provider = new AnchorProvider(
+      connection, window.solana, opts.preflightCommitment,
+    );
+    return provider;
+  }
 
   // Function to initialize the deck of cards
   const initializeDeck = () => {
@@ -30,6 +58,55 @@ const PokerGame = ({ walletAddress }) => {
 
     setDeck(newDeck);
   };
+
+  const getProgram = async () => {
+    // Get metadata about your solana program
+    console.log('programID',programID);
+    const idl = await Program.fetchIdl(programID, getProvider());
+    console.log('idl------');
+    console.log(idl);
+    // Create a program that you can call
+    return new Program(idl, programID, getProvider());
+  };
+
+  const initializePot = async () => {
+    try {
+      // Connect to the Solana network
+      const connection = new Connection('https://api.devnet.solana.com');
+
+      // Fetch the program account data
+      const accountInfo = await connection.getAccountInfo(new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"));
+      console.log('accountInfo', accountInfo);
+      console.log(accountInfo.data.toString());
+      const keypair = Keypair.generate(); // Generate a new key pair
+      const privateKey = keypair.secretKey;
+      console.log('Private Key:', privateKey);
+      // Initialize the anchor workspace
+      const provider = AnchorProvider.local();
+
+      // Set the provider's connection
+      // provider.connection = connection;
+      // // Set the provider's wallet with the private key
+      // provider.wallet = new Wallet(new web3.Account(privateKey));
+
+      // // Create an anchor program instance
+      // const program = new Program("Poker", new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"), provider);
+
+      // // Call the desired program function
+      // await program.rpc.create_round();
+
+      // Perform additional operations if needed
+
+      console.log('Function executed successfully.');
+      
+
+  
+    } catch (error) {
+      console.log("Error in  ", error)
+    }
+  }
+
+  
 
   // Function to deal the initial two cards to the player and computer
   const dealInitialCards = () => {
@@ -114,6 +191,7 @@ const PokerGame = ({ walletAddress }) => {
   return (
     <div>
       <button onClick={initializeDeck}>Initialize Deck</button>
+      <button onClick={initializePot}>Initialize Pot</button>
       <button onClick={dealInitialCards}>Deal Initial Cards</button>
       <button onClick={() => dealCard(playerHand, setPlayerHand)} disabled={!roundInProgress}>
         Deal Card

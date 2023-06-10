@@ -1,8 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
+import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { Program, AnchorProvider, web3 } from '@project-serum/anchor';
 import PokerGame from './PokerGame';
 
 // Constants
+
+// SystemProgram is a reference to the Solana runtime!
+const { SystemProgram, Keypair } = web3;
+
+// Create a keypair for the account that will hold the GIF data.
+let baseAccount = Keypair.generate();
+
+// This is the address of your solana program, if you forgot, just run solana address -k target/deploy/myepicproject-keypair.json
+const programID = new PublicKey("HHNCrJuKVtzRPuD3DVpcXkQA8dCuQ1U1KPntS9VKxFd7");
+
+// Set our network to devnet.
+const network = clusterApiUrl('devnet');
+
+// Controls how we want to acknowledge when a transaction is "done".
+const opts = {
+  preflightCommitment: "processed"
+}
 
 
 const App = () => {
@@ -22,7 +41,7 @@ const App = () => {
             'Connected with Public Key:',
             response.publicKey.toString()
           );
-          console.log('window.solana-----', window.solana)
+          console.log('window.solana', window.solana)
           /*
            * Set the user's publicKey in state to be used later!
            */
