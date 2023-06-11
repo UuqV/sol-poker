@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
-import { Program, AnchorProvider, web3, Wallet } from '@project-serum/anchor';
+import { Connection, PublicKey, clusterApiUrl,LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Program, AnchorProvider, web3, BN, Wallet } from '@project-serum/anchor';
 // const { publicKey, struct, u64, u8, option, } = require('@project-serum/borsh')
 import SolBalance from '../SolBalance';
 import IDL from "./idl.json";
+import { Buffer } from 'buffer';
 
+window.Buffer = Buffer;
 
 // SystemProgram is a reference to the Solana runtime!
 const { SystemProgram, Keypair } = web3;
@@ -66,9 +68,6 @@ const PokerGame = ({ walletAddress }) => {
   const getProgram = async () => {
     // Get metadata about your solana program
     console.log('programID',programID);
-    // const idl = await Program.fetchIdl(programID, getProvider());
-    // console.log('idl------');
-    // console.log(idl);
 
     // Create a program that you can call
     return new Program(IDL, programID, getProvider());
@@ -81,6 +80,44 @@ const PokerGame = ({ walletAddress }) => {
     )[0];
   };
 
+  const getRoundAddress = async (id) => {
+    return (
+      await PublicKey.findProgramAddress(
+        [Buffer.from('round'), new BN(id).toArrayLike(Buffer, "le", 4)],
+        programID
+      )
+    )[0];
+  };
+
+  const getHouseAddress = async () => {
+    return (
+      await PublicKey.findProgramAddress([Buffer.from('house')], programID)
+    )[0];
+  };
+
+  const getBetAddress = async (round_address, id) => {
+    return (
+      await PublicKey.findProgramAddress(
+        [
+          Buffer.from('bet'),
+          round_address.toBuffer(),
+          new BN(id).toArrayLike(Buffer, "le", 4),
+        ],
+        programID
+      )
+    )[0];
+  }
+
+  const confirmTx = async (txHash, connection) => {
+    const blockhashInfo = await connection.getLatestBlockhash();
+    await connection.confirmTransaction({
+      blockhash: blockhashInfo.blockhash,
+      lastValidBlockHeight: blockhashInfo.lastValidBlockHeight,
+      signature: txHash,
+    });
+  };
+
+
   const initializePot = async () => {
     try {
       // Connect to the Solana network
@@ -90,11 +127,43 @@ const PokerGame = ({ walletAddress }) => {
       const accountInfo = await connection.getAccountInfo(new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"));
       const program = await getProgram();
       console.log('program', program);
+      
+      const table_address = await getTableAddress();
+      console.log("table_address",table_address);
+
+      const table = await program.account.table.fetch(
+        table_address ?? (await getTableAddress())
+      );
+      console.log(table, 'table')
+
+      const round_address = await getRoundAddress(table.lastId);
+      console.log("round_address",round_address);
+
+      const balance = await connection.getBalance(round_address, 'confirmed');
+      const round_balance = balance / 10 ** 9; // Convert lamports to SOL
+      console.log(round_balance, 'round_balance')
+
+
+      const house_address = await getHouseAddress();
+      console.log("house_address",house_address);
+
+      const txHash = await program.methods
+      .createRound(new BN(.001).mul(new BN(LAMPORTS_PER_SOL)))
+        .accounts({
+          round: round_address,
+          table: table_address,
+          house: house_address,
+          systemProgram: SystemProgram.programId,
+        })
+        .rpc();
+      await confirmTx(txHash, connection);
+      console.log(txHash, "txHash")
+
       console.log('accountInfo', accountInfo);
       console.log(accountInfo.data.toString());
-      const keypair = Keypair.generate(); // Generate a new key pair
-      const privateKey = keypair.secretKey;
-      console.log('Private Key:', privateKey);
+      // const keypair = Keypair.generate(); // Generate a new key pair
+      // const privateKey = keypair.secretKey;
+      // console.log('Private Key:', privateKey);
       // Initialize the anchor workspace
       // const provider = AnchorProvider.local();
 
@@ -105,8 +174,7 @@ const PokerGame = ({ walletAddress }) => {
 
       // // Create an anchor program instance
       // const program = new Program("Poker", new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"), provider);
-      const table_address = await getTableAddress();
-      console.log("table_address",table_address);
+      
       // // Call the desired program function
       const accounts = await connection.getParsedProgramAccounts(programID);
       console.log(accounts);
@@ -156,37 +224,105 @@ const PokerGame = ({ walletAddress }) => {
   };
 
   // Function to handle placing a bet
-  const placeBet = () => {
-    if (playerBalance < 10) {
-      alert('Insufficient balance!');
-      return;
+  const placeBet = async () => {
+    try {
+      const connection = new Connection('https://api.devnet.solana.com');
+
+      const program = await getProgram();
+      console.log('program', program);
+
+      const table_address = await getTableAddress();
+      console.log("table_address",table_address);
+      const table = await program.account.table.fetch(
+        table_address ?? (await getTableAddress())
+      );
+
+      const round_address = await getRoundAddress(table.lastId);
+      console.log("round_address",round_address);
+
+      const round = await program.account.round.fetch(
+        round_address ?? (await getRoundAddress())
+      );
+      console.log(round, 'round')
+
+      const txHash = await program.methods
+      .buyBet(round.id)
+        .accounts({
+          round: round_address,
+          bet: await getBetAddress(
+            round_address,
+            round.lastBetId + 1
+          ),
+          buyer: walletAddress,
+        })
+        .rpc();
+      await confirmTx(txHash, connection);
+      console.log(txHash, "txHash")
+      const balance = await connection.getBalance(round_address, 'confirmed');
+      const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
+      setPot(pot_solBalance)
+
+    } catch (error) {
+      console.log("Error in  ", error)
     }
 
-    setPot(pot + 10); // Increment the pot by 10 (you can adjust the bet amount as needed)
-    setPlayerBalance(playerBalance - 10);
-    setComputerBalance(computerBalance - 10);
+    // setPot(pot + 10); // Increment the pot by 10 (you can adjust the bet amount as needed)
+    // setPlayerBalance(playerBalance - 10);
+    // setComputerBalance(computerBalance - 10);
   };
 
   // Function to determine the winner based on hand strength
-  const determineWinner = () => {
-    // You can implement your own hand evaluation logic here
-    // For simplicity, let's assume the player wins if they have a higher rank than the computer
+  const determineWinner = async () => {
+    try {
+      const connection = new Connection('https://api.devnet.solana.com');
 
-    const playerRank = getPlayerHandRank();
-    const computerRank = getComputerHandRank();
+      const program = await getProgram();
+      console.log('program', program);
 
-    if (playerRank > computerRank) {
-      alert('Player wins!');
-      setPlayerBalance(playerBalance + pot);
-    } else if (playerRank < computerRank) {
-      alert('Computer wins!');
-      setComputerBalance(computerBalance + pot);
-    } else {
-      alert("It's a tie!");
-      setPlayerBalance(playerBalance + pot / 2);
-      setComputerBalance(computerBalance + pot / 2);
+      const table_address = await getTableAddress();
+      console.log("table_address",table_address);
+      const table = await program.account.table.fetch(
+        table_address ?? (await getTableAddress())
+      );
+
+      const round_address = await getRoundAddress(table.lastId);
+      console.log("round_address",round_address);
+
+      const round = await program.account.round.fetch(
+        round_address ?? (await getRoundAddress())
+      );
+      console.log(round, 'round')
+
+      const bet_address = await getBetAddress(
+        round_address,
+        round.lastBetId + 1
+      )
+      console.log(bet_address, 'bet_address')
+      const bet = await program.account.bet.fetch(bet_address)
+      
+
+      console.log(bet, 'bet')
+
+      const txHash = await program.methods
+      .claimPot(round.id, bet.id)
+        .accounts({
+          round: round_address,
+          bet: bet_address,
+          buyer: walletAddress,
+        })
+        .rpc();
+      await confirmTx(txHash, connection);
+      console.log(txHash, "txHash")
+      const balance = await connection.getBalance(round_address, 'confirmed');
+      const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
+      setPot(pot_solBalance)
+
+    } catch (error) {
+      console.log("Error in  ", error)
     }
 
+
+    setPlayerBalance(playerBalance + pot);
     setPot(0);
     setRoundInProgress(false);
   };
