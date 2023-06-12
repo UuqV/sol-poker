@@ -295,7 +295,7 @@ const PokerGame = ({ walletAddress }) => {
 
       const bet_address = await getBetAddress(
         round_address,
-        round.lastBetId + 1
+        round.lastBetId
       )
       console.log(bet_address, 'bet_address')
       const bet = await program.account.bet.fetch(bet_address)
