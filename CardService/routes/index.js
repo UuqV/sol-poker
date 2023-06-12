@@ -1,10 +1,44 @@
+// import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+// import { Program, AnchorProvider, web3, Wallet } from '@project-serum/anchor';
+var web3 = require('@solana/web3.js');
+var anchor = require('@project-serum/anchor');
 var express = require('express');
 var router = express.Router();
+var IDL  = require("./idl");
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
+const network = web3.clusterApiUrl('devnet');
+
+// Controls how we want to acknowledge when a transaction is "done".
+const opts = {
+  preflightCommitment: "processed"
+}
+
+const programID = new web3.PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU");
+
+const getProvider = () => {
+  const connection = new web3.Connection(network, opts.preflightCommitment);
+  const provider = new anchor.AnchorProvider(
+    connection, web3.solana, opts.preflightCommitment,
+  );
+  console.log('provider',provider);
+  return provider;
+
+}
+
+const getProgram = async () => {
+  // Get metadata about your solana program
+  console.log('programID',programID);
+  // const idl = await Program.fetchIdl(programID, getProvider());
+  // console.log('idl------');
+  // console.log(idl);
+
+  // Create a program that you can call
+  return new anchor.Program(IDL, programID, getProvider());
+};
 
 // Function to initialize the deck of cards
 const initializeDeck = () => {
@@ -27,6 +61,12 @@ let deck = initializeDeck();
 
 let hands = [];
 let commonCards = [];
+
+const getTableAddress = async () => {
+  return (
+    await web3.PublicKey.findProgramAddress([Buffer.from('table')], programID)
+  )[0];
+};
 
 
 /* GET cards. */
@@ -95,6 +135,50 @@ router.get('/river/', function(req, res, next) {
   commonCards.push(cards);
   commonCards = commonCards.flat();
   res.send(commonCards);
+});
+
+router.get('/table/', async function (req, res, next) {
+  
+  try {
+    // Connect to the Solana network
+    const connection = new web3.Connection('https://api.devnet.solana.com');
+
+    // Fetch the program account data
+    const accountInfo = await connection.getAccountInfo(new web3.PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"));
+    const program = await getProgram();
+    console.log('program', program);
+    console.log('accountInfo', accountInfo);
+    console.log(accountInfo.data.toString());
+    // const keypair = Keypair.generate(); // Generate a new key pair
+    // const privateKey = keypair.secretKey;
+    // console.log('Private Key:', privateKey);
+    // Initialize the anchor workspace
+    // const provider = AnchorProvider.local();
+
+    // Set the provider's connection
+    // provider.connection = connection;
+    // // Set the provider's wallet with the private key
+    // provider.wallet = new Wallet(new web3.Account(privateKey));
+
+    // // Create an anchor program instance
+    // const program = new Program("Poker", new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"), provider);
+    const table_address = await getTableAddress();
+    console.log("table_address",table_address);
+    // // Call the desired program function
+    const accounts = await connection.getParsedProgramAccounts(programID);
+    console.log(accounts);
+    const create_round = await program.rpc.createRound();
+    console.log('create_round', create_round)
+
+    // Perform additional operations if needed
+
+    console.log('Function executed successfully.');
+
+
+
+  } catch (error) {
+    console.log("Error in  ", error)
+  }
 });
 
 router.get('/winner/', function(req, res, next) {
