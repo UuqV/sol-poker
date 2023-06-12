@@ -83,7 +83,7 @@ const PokerGame = ({ walletAddress }) => {
   const getPotAddress = async (id) => {
     return (
       await PublicKey.findProgramAddress(
-        [Buffer.from('pot'), new BN(id).toArrayLike(Buffer, "le", 4)],
+        [Buffer.from('pot'), new BN(id).toArrayLike(Buffer, "le", id + 1)],
         programID
       )
     )[0];
@@ -245,6 +245,8 @@ const PokerGame = ({ walletAddress }) => {
       );
       console.log(pot, 'pot')
 
+      const house_address = await getHouseAddress(master.lastId);
+
       const txHash = await program.methods
       .buyBet(pot.id)
         .accounts({
@@ -253,7 +255,7 @@ const PokerGame = ({ walletAddress }) => {
             pot_address,
             pot.lastBetId + 1
           ),
-          buyer: walletAddress,
+          house: house_address,
         })
         .rpc();
       await confirmTx(txHash, connection);
@@ -299,7 +301,8 @@ const PokerGame = ({ walletAddress }) => {
       )
       console.log(bet_address, 'bet_address')
       const bet = await program.account.bet.fetch(bet_address)
-      
+
+      const house_address = await getHouseAddress();
 
       console.log(bet, 'bet')
 
@@ -308,7 +311,7 @@ const PokerGame = ({ walletAddress }) => {
         .accounts({
           pot: pot_address,
           bet: bet_address,
-          buyer: walletAddress,
+          house: house_address,
         })
         .rpc();
       await confirmTx(txHash, connection);
