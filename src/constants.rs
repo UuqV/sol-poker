@@ -1,3 +1,3 @@
-pub const TABLE_SEED: &str = "table";
-pub const ROUND_SEED: &str = "round";
+pub const MASTER_SEED: &str = "master";
+pub const POT_SEED: &str = "pot";
 pub const BET_SEED: &str = "bet";
