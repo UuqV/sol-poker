@@ -30,7 +30,7 @@ const PokerGame = ({ walletAddress }) => {
   const [playerHand, setPlayerHand] = useState([]);
   const [computerHand, setComputerHand] = useState([]);
   const [pot, setPot] = useState(0);
-  const [roundInProgress, setRoundInProgress] = useState(false);
+  const [potInProgress, setPotInProgress] = useState(false);
   const [playerBalance, setPlayerBalance] = useState(1000);
   const [computerBalance, setComputerBalance] = useState(1000);
 
@@ -74,16 +74,16 @@ const PokerGame = ({ walletAddress }) => {
   };
 
 
-  const getTableAddress = async () => {
+  const getMasterAddress = async () => {
     return (
-      await PublicKey.findProgramAddress([Buffer.from('table')], programID)
+      await PublicKey.findProgramAddress([Buffer.from('master')], programID)
     )[0];
   };
 
-  const getRoundAddress = async (id) => {
+  const getPotAddress = async (id) => {
     return (
       await PublicKey.findProgramAddress(
-        [Buffer.from('round'), new BN(id).toArrayLike(Buffer, "le", 4)],
+        [Buffer.from('pot'), new BN(id).toArrayLike(Buffer, "le", 4)],
         programID
       )
     )[0];
@@ -95,12 +95,12 @@ const PokerGame = ({ walletAddress }) => {
     )[0];
   };
 
-  const getBetAddress = async (round_address, id) => {
+  const getBetAddress = async (pot_address, id) => {
     return (
       await PublicKey.findProgramAddress(
         [
           Buffer.from('bet'),
-          round_address.toBuffer(),
+          pot_address.toBuffer(),
           new BN(id).toArrayLike(Buffer, "le", 4),
         ],
         programID
@@ -128,30 +128,30 @@ const PokerGame = ({ walletAddress }) => {
       const program = await getProgram();
       console.log('program', program);
       
-      const table_address = await getTableAddress();
-      console.log("table_address",table_address);
+      const master_address = await getMasterAddress();
+      console.log("master_address",master_address);
 
-      const table = await program.account.table.fetch(
-        table_address ?? (await getTableAddress())
+      const master = await program.account.master.fetch(
+        master_address ?? (await getMasterAddress())
       );
-      console.log(table, 'table')
+      console.log(master, 'master')
 
-      const round_address = await getRoundAddress(table.lastId);
-      console.log("round_address",round_address);
+      const pot_address = await getPotAddress(master.lastId);
+      console.log("pot_address",pot_address);
 
-      const balance = await connection.getBalance(round_address, 'confirmed');
-      const round_balance = balance / 10 ** 9; // Convert lamports to SOL
-      console.log(round_balance, 'round_balance')
+      const balance = await connection.getBalance(pot_address, 'confirmed');
+      const pot_balance = balance / 10 ** 9; // Convert lamports to SOL
+      console.log(pot_balance, 'pot_balance')
 
 
       const house_address = await getHouseAddress();
       console.log("house_address",house_address);
 
       const txHash = await program.methods
-      .createRound(new BN(.001).mul(new BN(LAMPORTS_PER_SOL)))
+      .createPot(new BN(.001).mul(new BN(LAMPORTS_PER_SOL)))
         .accounts({
-          round: round_address,
-          table: table_address,
+          pot: pot_address,
+          master: master_address,
           house: house_address,
           systemProgram: SystemProgram.programId,
         })
@@ -178,8 +178,8 @@ const PokerGame = ({ walletAddress }) => {
       // // Call the desired program function
       const accounts = await connection.getParsedProgramAccounts(programID);
       console.log(accounts);
-      const create_round = await program.rpc.createRound();
-      console.log('create_round', create_round)
+      const create_pot = await program.rpc.createPot();
+      console.log('create_pot', create_pot)
 
       // Perform additional operations if needed
 
@@ -205,7 +205,7 @@ const PokerGame = ({ walletAddress }) => {
     const computerCards = deck.splice(0, 2);
     setPlayerHand(playerCards);
     setComputerHand(computerCards);
-    setRoundInProgress(true);
+    setPotInProgress(true);
   };
 
   // Function to deal an additional card to the player or computer
@@ -231,34 +231,34 @@ const PokerGame = ({ walletAddress }) => {
       const program = await getProgram();
       console.log('program', program);
 
-      const table_address = await getTableAddress();
-      console.log("table_address",table_address);
-      const table = await program.account.table.fetch(
-        table_address ?? (await getTableAddress())
+      const master_address = await getMasterAddress();
+      console.log("master_address",master_address);
+      const master = await program.account.master.fetch(
+        master_address ?? (await getMasterAddress())
       );
 
-      const round_address = await getRoundAddress(table.lastId);
-      console.log("round_address",round_address);
+      const pot_address = await getPotAddress(master.lastId);
+      console.log("pot_address",pot_address);
 
-      const round = await program.account.round.fetch(
-        round_address ?? (await getRoundAddress())
+      const pot = await program.account.pot.fetch(
+        pot_address ?? (await getPotAddress())
       );
-      console.log(round, 'round')
+      console.log(pot, 'pot')
 
       const txHash = await program.methods
-      .buyBet(round.id)
+      .buyBet(pot.id)
         .accounts({
-          round: round_address,
+          pot: pot_address,
           bet: await getBetAddress(
-            round_address,
-            round.lastBetId + 1
+            pot_address,
+            pot.lastBetId + 1
           ),
           buyer: walletAddress,
         })
         .rpc();
       await confirmTx(txHash, connection);
       console.log(txHash, "txHash")
-      const balance = await connection.getBalance(round_address, 'confirmed');
+      const balance = await connection.getBalance(pot_address, 'confirmed');
       const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
       setPot(pot_solBalance)
 
@@ -279,23 +279,23 @@ const PokerGame = ({ walletAddress }) => {
       const program = await getProgram();
       console.log('program', program);
 
-      const table_address = await getTableAddress();
-      console.log("table_address",table_address);
-      const table = await program.account.table.fetch(
-        table_address ?? (await getTableAddress())
+      const master_address = await getMasterAddress();
+      console.log("master_address",master_address);
+      const master = await program.account.master.fetch(
+        master_address ?? (await getMasterAddress())
       );
 
-      const round_address = await getRoundAddress(table.lastId);
-      console.log("round_address",round_address);
+      const pot_address = await getPotAddress(master.lastId);
+      console.log("pot_address",pot_address);
 
-      const round = await program.account.round.fetch(
-        round_address ?? (await getRoundAddress())
+      const pot = await program.account.pot.fetch(
+        pot_address ?? (await getPotAddress())
       );
-      console.log(round, 'round')
+      console.log(pot, 'pot')
 
       const bet_address = await getBetAddress(
-        round_address,
-        round.lastBetId
+        pot_address,
+        pot.lastBetId
       )
       console.log(bet_address, 'bet_address')
       const bet = await program.account.bet.fetch(bet_address)
@@ -304,16 +304,16 @@ const PokerGame = ({ walletAddress }) => {
       console.log(bet, 'bet')
 
       const txHash = await program.methods
-      .claimPot(round.id, bet.id)
+      .claimPot(pot.id, bet.id)
         .accounts({
-          round: round_address,
+          pot: pot_address,
           bet: bet_address,
           buyer: walletAddress,
         })
         .rpc();
       await confirmTx(txHash, connection);
       console.log(txHash, "txHash")
-      const balance = await connection.getBalance(round_address, 'confirmed');
+      const balance = await connection.getBalance(pot_address, 'confirmed');
       const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
       setPot(pot_solBalance)
 
@@ -324,7 +324,7 @@ const PokerGame = ({ walletAddress }) => {
 
     setPlayerBalance(playerBalance + pot);
     setPot(0);
-    setRoundInProgress(false);
+    setPotInProgress(false);
   };
 
   // Helper function to calculate the rank of the player's hand (for simplicity, let's just use the highest card rank)
@@ -347,16 +347,16 @@ const PokerGame = ({ walletAddress }) => {
       <button onClick={initializeDeck}>Initialize Deck</button>
       <button onClick={initializePot}>Initialize Pot</button>
       <button onClick={dealInitialCards}>Deal Initial Cards</button>
-      <button onClick={() => dealCard(playerHand, setPlayerHand)} disabled={!roundInProgress}>
+      <button onClick={() => dealCard(playerHand, setPlayerHand)} disabled={!potInProgress}>
         Deal Card
       </button>
-      <button onClick={() => dealCard(computerHand, setComputerHand)} disabled={!roundInProgress}>
+      <button onClick={() => dealCard(computerHand, setComputerHand)} disabled={!potInProgress}>
         Computer Deal
       </button>
-      <button onClick={placeBet} disabled={!roundInProgress}>
+      <button onClick={placeBet} disabled={!potInProgress}>
         Place Bet
       </button>
-      <button onClick={determineWinner} disabled={!roundInProgress}>
+      <button onClick={determineWinner} disabled={!potInProgress}>
         Determine Winner
       </button>
 
