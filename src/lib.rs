@@ -39,7 +39,7 @@ mod pot {
     pub fn buy_bet(ctx: Context<BuyBet>, pot_id: u32) -> Result<()> {
         let pot = &mut ctx.accounts.pot;
         let bet = &mut ctx.accounts.bet;
-        let buyer = &ctx.accounts.buyer;
+        let buyer = &mut ctx.accounts.buyer;
 
         invoke(
             &transfer(&buyer.key(), &pot.key(), pot.bet_price),
@@ -73,10 +73,7 @@ mod pot {
 
     pub fn claim_pot(ctx: Context<ClaimPot>, pot_id: u32, bet_id: u32) -> Result<()> {
         let pot = &mut ctx.accounts.pot;
-        let bet = &ctx.accounts.bet;
-        let winner = &ctx.accounts.house;
-
-        pot.winner_id = Some(bet.id);
+        let winner = &mut ctx.accounts.house;
 
         let winnings = pot.bet_price.checked_mul(pot.last_bet_id.into()).unwrap();
 
@@ -84,14 +81,6 @@ mod pot {
         **winner.to_account_info().try_borrow_mut_lamports()? += winnings;
 
         pot.claimed = true;
-
-        msg!(
-            "{} claimed {} lamports from pot id {} with bet id {}",
-            winner.key(),
-            winnings,
-            pot.id,
-            bet.id
-        );
 
         Ok(())
     }
@@ -174,9 +163,6 @@ pub struct PickWinner<'info> {
 pub struct ClaimPot<'info> {
     #[account(mut, seeds = [POT_SEED.as_bytes(), &pot_id.to_le_bytes()], bump,)]
     pub pot: Account<'info, Pot>,
-
-    #[account(mut, seeds = [BET_SEED.as_bytes(), pot.key().as_ref(), &bet_id.to_le_bytes()], bump, has_one = house)]
-    pub bet: Account<'info, Bet>,
 
     #[account(mut)]
     pub house: Signer<'info>,

@@ -118,7 +118,7 @@ const PokerGame = ({ walletAddress }) => {
 
   const getBetAddress = async (pot_address, id) => {
     return (
-      await PublicKey.findProgramAddress(
+      await PublicKey.findProgramAddressSync(
         [
           Buffer.from('bet'),
           pot_address.toBuffer(),
@@ -163,15 +163,18 @@ const PokerGame = ({ walletAddress }) => {
     const house_address = await getHouseAddress();
 
     const txHash = await program.methods
-    .createPot(new BN(.001).mul(new BN(LAMPORTS_PER_SOL)))
+    .createPot(new BN(1000000))
       .accounts({
         pot: pot_address,
         master: master_address,
-        house: house_address,
+        house: walletAddress,
         systemProgram: SystemProgram.programId,
       })
       .rpc();
     await confirmTx(txHash, connection);
+    const newBalance = await connection.getBalance(pot_address, 'confirmed');
+    const pot_solBalance = newBalance / 10 ** 9; // Convert lamports to SOL
+    setPot(pot_solBalance)
 
   }
 
@@ -221,18 +224,18 @@ const PokerGame = ({ walletAddress }) => {
       );
       console.log(master, 'master')
 
-      const pot_address = await getPotAddress(7);
+      const pot_address = await getPotAddress(master.lastId);
       console.log("pot_address",pot_address);
 
       const pot = await program.account.pot.fetch(
-        pot_address ?? (await getPotAddress(7))
+        pot_address ?? (await getPotAddress(master.lastId))
       );
-      console.log(pot, 'pot')
+      console.log('pot_address', pot_address.toString())
       const pot_balance = await connection.getBalance(pot_address, 'confirmed') / 10 ** 9; // Convert lamports to SOL
-      console.log(pot_balance, 'pot_balance')
+      console.log('pot_balance', pot_balance);
 
-      const house_address = await getHouseAddress(master.lastId);
-      console.log("house_address",house_address);
+      const house_address = await getHouseAddress();
+      console.log("house_address",house_address.toString());
 
       const txHash = await program.methods
       .buyBet(pot.id)
@@ -242,7 +245,7 @@ const PokerGame = ({ walletAddress }) => {
             pot_address,
             pot.lastBetId + 1
           ),
-          house: house_address,
+          house: walletAddress,
         })
         .rpc();
       await confirmTx(txHash, connection);
@@ -262,59 +265,53 @@ const PokerGame = ({ walletAddress }) => {
 
   // Function to determine the winner based on hand strength
   const determineWinner = async () => {
-    try {
-      const connection = new Connection('https://api.devnet.solana.com');
+    const connection = new Connection('https://api.devnet.solana.com');
 
-      const program = await getProgram();
-      console.log('program', program);
+    const program = await getProgram();
 
-      const master_address = await getMasterAddress();
-      console.log("master_address",master_address);
-      const master = await program.account.master.fetch(
-        master_address ?? (await getMasterAddress())
-      );
+    const master_address = await getMasterAddress();
+    const master = await program.account.master.fetch(
+      master_address ?? (await getMasterAddress())
+    );
 
-      const pot_address = await getPotAddress(master.lastId);
-      console.log("pot_address",pot_address);
+    const pot_address = await getPotAddress(master.lastId);
 
-      const pot = await program.account.pot.fetch(
-        pot_address ?? (await getPotAddress())
-      );
-      console.log(pot, 'pot')
+    const pot = await program.account.pot.fetch(
+      pot_address ?? (await getPotAddress())
+    );
+    console.log('pot_address', pot_address.toString());
 
-      const bet_address = await getBetAddress(
-        pot_address,
-        pot.lastBetId
-      )
-      console.log(bet_address, 'bet_address')
-      const bet = await program.account.bet.fetch(bet_address)
+    const bet_address = await getBetAddress(
+      pot_address,
+      pot.lastBetId
+    )
+    console.log('bet_address', bet_address.toString());
 
-      const house_address = await getHouseAddress();
+    const bet = await program.account.bet.fetch(bet_address)
 
-      console.log(bet, 'bet')
+    const house_address = await getHouseAddress();
+    console.log('walletAddress', walletAddress.toString())
 
-      const txHash = await program.methods
-      .claimPot(pot.id, bet.id)
-        .accounts({
-          pot: pot_address,
-          bet: bet_address,
-          house: house_address,
-        })
-        .rpc();
-      await confirmTx(txHash, connection);
-      console.log(txHash, "txHash")
-      const balance = await connection.getBalance(pot_address, 'confirmed');
-      const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
-      setPot(pot_solBalance)
+    console.log('pot id', pot.id);
+    console.log('bet id', bet.id);
 
-    } catch (error) {
-      console.log("Error in  ", error)
-    }
+    const txHash = await program.methods
+    .claimPot(pot.id, bet.id)
+      .accounts({
+        pot: pot_address,
+        house: walletAddress,
+      })
+      .rpc();
+    await confirmTx(txHash, connection);
+    console.log(txHash, "txHash")
+    const balance = await connection.getBalance(pot_address, 'confirmed');
+    const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
+    setPot(pot_solBalance)
 
 
-    setPlayerBalance(playerBalance + pot);
-    setPot(0);
-    setPotInProgress(false);
+  setPlayerBalance(playerBalance + pot);
+  setPot(0);
+  setPotInProgress(false);
   };
 
   // Helper function to calculate the rank of the player's hand (for simplicity, let's just use the highest card rank)

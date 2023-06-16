@@ -115,11 +115,6 @@
                     "isSigner": false
                 },
                 {
-                    "name": "bet",
-                    "isMut": false,
-                    "isSigner": false
-                },
-                {
                     "name": "authority",
                     "isMut": true,
                     "isSigner": true
