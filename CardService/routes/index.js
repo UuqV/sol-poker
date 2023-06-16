@@ -3,8 +3,12 @@
 var web3 = require('@solana/web3.js');
 var anchor = require('@project-serum/anchor');
 var express = require('express');
+const cors = require('cors');
 var router = express.Router();
 var IDL  = require("./idl");
+
+// Enable CORS for all routes
+router.use(cors());
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -33,8 +37,6 @@ const getProgram = async () => {
   // Get metadata about your solana program
   console.log('programID',programID);
   // const idl = await Program.fetchIdl(programID, getProvider());
-  // console.log('idl------');
-  // console.log(idl);
 
   // Create a program that you can call
   return new anchor.Program(IDL, programID, getProvider());
@@ -52,6 +54,12 @@ const initializeDeck = () => {
     for (const rank of ranks) {
       newDeck.push({ suit, rank });
     }
+  }
+
+  // Fisher-Yates shuffle algorithm
+  for (let i = newDeck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
   }
 
   return newDeck;
@@ -73,29 +81,36 @@ const getTableAddress = async () => {
 router.get('/shuffle/', function(req, res, next) {
   
   deck = initializeDeck();
+  console.log('deck', deck);
 
   hands = [];
   commonCards = [];
+  resJson = {
+    deck: deck,
+    hands: hands,
+    commonCards: commonCards
+  }
   
-  res.send("Deck shuffled and hands reset");
+  res.send(resJson);
 });
 
 /* GET cards. */
 router.get('/hand/', function(req, res, next) {
   
     // Function to deal the initial two cards to the player and computer
-    const dealInitialCards = () => {
-      if (deck.length < 4) {
-        res.errored('Not enough cards in the deck!');
-        return;
-      }
-  
-      const playerCards = deck.splice(0, 2);
-      return playerCards;
-    };
+  const dealInitialCards = () => {
+    if (deck.length < 4) {
+      res.errored('Not enough cards in the deck!');
+      return;
+    }
+
+    const playerCards = deck.splice(0, 2);
+    return playerCards;
+  };
 
   const cards = dealInitialCards();
   hands.push(cards);
+  console.log('hands', hands);
   res.send(cards);
 });
 
@@ -134,6 +149,7 @@ router.get('/river/', function(req, res, next) {
   const cards = dealFlop();
   commonCards.push(cards);
   commonCards = commonCards.flat();
+  console.log('commonCards', commonCards);
   res.send(commonCards);
 });
 
