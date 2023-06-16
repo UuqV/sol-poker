@@ -103,18 +103,17 @@ const PokerGame = ({ walletAddress }) => {
   };
 
   const getPotAddress = async (id) => {
+    console.log('id', id);
     return (
-      await PublicKey.findProgramAddress(
-        [Buffer.from('pot'), new BN(id).toArrayLike(Buffer, "le", id + 1)],
+      await PublicKey.findProgramAddressSync(
+        [Buffer.from('pot'), new BN(id).toArrayLike(Buffer, "le", 4)],
         programID
       )
     )[0];
   };
 
   const getHouseAddress = async () => {
-    return (
-      await PublicKey.findProgramAddress([Buffer.from('house')], programID)
-    )[0];
+    return new PublicKey('HHNCrJuKVtzRPuD3DVpcXkQA8dCuQ1U1KPntS9VKxFd7');
   };
 
   const getBetAddress = async (pot_address, id) => {
@@ -141,77 +140,39 @@ const PokerGame = ({ walletAddress }) => {
 
 
   const initializePot = async () => {
-    try {
-      // Connect to the Solana network
-      const connection = new Connection('https://api.devnet.solana.com');
+    // Connect to the Solana network
+    const connection = new Connection('https://api.devnet.solana.com');
 
-      // Fetch the program account data
-      const accountInfo = await connection.getAccountInfo(new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"));
-      const program = await getProgram();
-      console.log('program', program);
-      
-      const master_address = await getMasterAddress();
-      console.log("master_address",master_address);
+    // Fetch the program account data
+    const accountInfo = await connection.getAccountInfo(new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"));
+    const program = await getProgram();
+    
+    const master_address = await getMasterAddress();
 
-      const master = await program.account.master.fetch(
-        master_address ?? (await getMasterAddress())
-      );
-      console.log(master, 'master')
+    const master = await program.account.master.fetch(
+      master_address ?? (await getMasterAddress())
+    );
+    
+    const pot_address = await getPotAddress(master.lastId + 1);
+    console.log(pot_address.toString())
 
-      const pot_address = await getPotAddress(master.lastId);
-      console.log("pot_address",pot_address);
-
-      const balance = await connection.getBalance(pot_address, 'confirmed');
-      const pot_balance = balance / 10 ** 9; // Convert lamports to SOL
-      console.log(pot_balance, 'pot_balance')
+    const balance = await connection.getBalance(pot_address, 'confirmed');
+    const pot_balance = balance / 10 ** 9; // Convert lamports to SOL
 
 
-      const house_address = await getHouseAddress();
-      console.log("house_address",house_address);
+    const house_address = await getHouseAddress();
 
-      const txHash = await program.methods
-      .createPot(new BN(.001).mul(new BN(LAMPORTS_PER_SOL)))
-        .accounts({
-          pot: pot_address,
-          master: master_address,
-          house: house_address,
-          systemProgram: SystemProgram.programId,
-        })
-        .rpc();
-      await confirmTx(txHash, connection);
-      console.log(txHash, "txHash")
+    const txHash = await program.methods
+    .createPot(new BN(.001).mul(new BN(LAMPORTS_PER_SOL)))
+      .accounts({
+        pot: pot_address,
+        master: master_address,
+        house: house_address,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+    await confirmTx(txHash, connection);
 
-      console.log('accountInfo', accountInfo);
-      console.log(accountInfo.data.toString());
-      // const keypair = Keypair.generate(); // Generate a new key pair
-      // const privateKey = keypair.secretKey;
-      // console.log('Private Key:', privateKey);
-      // Initialize the anchor workspace
-      // const provider = AnchorProvider.local();
-
-      // Set the provider's connection
-      // provider.connection = connection;
-      // // Set the provider's wallet with the private key
-      // provider.wallet = new Wallet(new web3.Account(privateKey));
-
-      // // Create an anchor program instance
-      // const program = new Program("Poker", new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"), provider);
-      
-      // // Call the desired program function
-      const accounts = await connection.getParsedProgramAccounts(programID);
-      console.log(accounts);
-      const create_pot = await program.rpc.createPot();
-      console.log('create_pot', create_pot)
-
-      // Perform additional operations if needed
-
-      console.log('Function executed successfully.');
-      
-
-  
-    } catch (error) {
-      console.log("Error in  ", error)
-    }
   }
 
   

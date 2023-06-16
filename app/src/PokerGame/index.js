@@ -83,25 +83,23 @@ const PokerGame = ({ walletAddress }) => {
   const getPotAddress = async (id) => {
     return (
       await PublicKey.findProgramAddress(
-        [Buffer.from('pot'), new BN(id).toArrayLike(Buffer, "le", id + 1)],
+        [Buffer.from('pot'), new BN(id).toArrayLike(Buffer, "le", 4)],
         programID
       )
     )[0];
   };
 
   const getHouseAddress = async () => {
-    return (
-      await PublicKey.findProgramAddress([Buffer.from('house')], programID)
-    )[0];
+    return 'HHNCrJuKVtzRPuD3DVpcXkQA8dCuQ1U1KPntS9VKxFd7';
   };
 
-  const getBetAddress = async (pot_address, id) => {
+  const getBetAddress = async (pot_address, lastBetId) => {
     return (
       await PublicKey.findProgramAddress(
         [
           Buffer.from('bet'),
           pot_address.toBuffer(),
-          new BN(id).toArrayLike(Buffer, "le", 4),
+          new BN(lastBetId).toArrayLike(Buffer, "le", 4),
         ],
         programID
       )
@@ -136,7 +134,7 @@ const PokerGame = ({ walletAddress }) => {
       );
       console.log(master, 'master')
 
-      const pot_address = await getPotAddress(master.lastId);
+      const pot_address = await getPotAddress(master.lastId + 1);
       console.log("pot_address",pot_address);
 
       const balance = await connection.getBalance(pot_address, 'confirmed');
@@ -158,9 +156,6 @@ const PokerGame = ({ walletAddress }) => {
         .rpc();
       await confirmTx(txHash, connection);
       console.log(txHash, "txHash")
-
-      console.log('accountInfo', accountInfo);
-      console.log(accountInfo.data.toString());
       // const keypair = Keypair.generate(); // Generate a new key pair
       // const privateKey = keypair.secretKey;
       // console.log('Private Key:', privateKey);
@@ -177,10 +172,6 @@ const PokerGame = ({ walletAddress }) => {
       
       // // Call the desired program function
       const accounts = await connection.getParsedProgramAccounts(programID);
-      console.log(accounts);
-      const create_pot = await program.rpc.createPot();
-      console.log('create_pot', create_pot)
-
       // Perform additional operations if needed
 
       console.log('Function executed successfully.');
@@ -247,14 +238,16 @@ const PokerGame = ({ walletAddress }) => {
 
       const house_address = await getHouseAddress(master.lastId);
 
+      const bet_address =  await getBetAddress(
+        pot_address,
+        pot.lastBetId + 1
+      );
+
       const txHash = await program.methods
       .buyBet(pot.id)
         .accounts({
           pot: pot_address,
-          bet: await getBetAddress(
-            pot_address,
-            pot.lastBetId + 1
-          ),
+          bet:bet_address,
           house: house_address,
         })
         .rpc();
@@ -293,7 +286,7 @@ const PokerGame = ({ walletAddress }) => {
       const pot = await program.account.pot.fetch(
         pot_address ?? (await getPotAddress())
       );
-      console.log(pot, 'pot')
+      console.log('pot', pot)
 
       const bet_address = await getBetAddress(
         pot_address,
