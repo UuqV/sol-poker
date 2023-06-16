@@ -163,7 +163,7 @@ const PokerGame = ({ walletAddress }) => {
     const house_address = await getHouseAddress();
 
     const txHash = await program.methods
-    .createPot(new BN(1000000))
+    .createPot(new BN(100000000))
       .accounts({
         pot: pot_address,
         master: master_address,
