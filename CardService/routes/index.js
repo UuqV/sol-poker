@@ -56,6 +56,12 @@ const initializeDeck = () => {
     }
   }
 
+  // Fisher-Yates shuffle algorithm
+  for (let i = newDeck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+  }
+
   return newDeck;
 };
 
@@ -75,6 +81,7 @@ const getTableAddress = async () => {
 router.get('/shuffle/', function(req, res, next) {
   
   deck = initializeDeck();
+  console.log('deck', deck);
 
   hands = [];
   commonCards = [];
@@ -142,6 +149,7 @@ router.get('/river/', function(req, res, next) {
   const cards = dealFlop();
   commonCards.push(cards);
   commonCards = commonCards.flat();
+  console.log('commonCards', commonCards);
   res.send(commonCards);
 });
 

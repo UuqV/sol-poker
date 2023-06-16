@@ -28,12 +28,13 @@ const opts = {
 
 const PokerGame = ({ walletAddress }) => {
   const [deck, setDeck] = useState([]);
+  const [flop, setFlop] = useState([]);
+  const [doneInitFlop, setDoneInitFlop] = useState(false);
   const [playerAHand, setPlayerAHand] = useState([]);
   const [playerBHand, setPlayerBHand] = useState([]);
   const [pot, setPot] = useState(0);
   const [potInProgress, setPotInProgress] = useState(false);
   const [playerBalance, setPlayerBalance] = useState(1000);
-  const [computerBalance, setComputerBalance] = useState(1000);
 
   useEffect(() => {
     initializeDeck();
@@ -57,6 +58,10 @@ const PokerGame = ({ walletAddress }) => {
         const result = await axios.get('http://localhost:3001/shuffle/');
         const newDeck = result.data['deck'];
         setDeck(newDeck);
+        setFlop([]);
+        setPlayerAHand([]);
+        setPlayerBHand([]);
+        setDoneInitFlop(false);
         console.log(result);
       } catch (error) {
         console.error(error);
@@ -64,6 +69,22 @@ const PokerGame = ({ walletAddress }) => {
     };
 
     fetchData();    
+  };
+
+  const initializeFlop = async () => {
+    const fetchData = async () => {
+      try {
+        const result = await axios.get('http://localhost:3001/flop/');
+        const flop = result.data;
+        setFlop(flop);
+        setDoneInitFlop(true);
+        console.log('flop', flop);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();  
   };
 
   const getProgram = async () => {
@@ -208,21 +229,20 @@ const PokerGame = ({ walletAddress }) => {
     }
   };
     
-  
+  // Function to deal an additional card to the table
+  const dealCard = () => {
+    const fetchData = async () => {
+      try {
+        const result = await axios.get('http://localhost:3001/river/');
+        const flop = result.data;
+        setFlop(flop);
+        console.log('flop', flop);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-  // Function to deal an additional card to the player or computer
-  const dealCard = (hand, setHand) => {
-    if (deck.length === 0) {
-      alert('No more cards in the deck!');
-      return;
-    }
-
-    const newCard = deck[0];
-    const newHand = [...hand, newCard];
-    const newDeck = deck.slice(1);
-
-    setHand(newHand);
-    setDeck(newDeck);
+    fetchData();
   };
 
   // Function to handle placing a bet
@@ -354,13 +374,11 @@ const PokerGame = ({ walletAddress }) => {
   return (
     <div>
       <button onClick={initializeDeck}>Initialize Deck</button>
+      <button onClick={initializeFlop} disabled={doneInitFlop}>Initialize Flop</button>
       <button onClick={initializePot}>Initialize Pot</button>
-      <button onClick={dealInitialCards}>Deal Initial Cards</button>
-      <button onClick={() => dealCard(playerAHand, setPlayerAHand)} disabled={!potInProgress}>
-        Deal Card
-      </button>
-      <button onClick={() => dealCard(playerBHand, setPlayerBHand)} disabled={!potInProgress}>
-        Computer Deal
+      <button onClick={dealInitialCards}>Deal Initial Cards to Players</button>
+      <button onClick={dealCard}>
+        Deal Card to Table
       </button>
       <button onClick={placeBet} disabled={!potInProgress}>
         Place Bet
@@ -368,6 +386,15 @@ const PokerGame = ({ walletAddress }) => {
       <button onClick={determineWinner} disabled={!potInProgress}>
         Determine Winner
       </button>
+
+      <h2>Flop</h2>
+      <ul>
+        {flop.map((card, index) => (
+          <li key={index}>
+            {card.rank} of {card.suit}
+          </li>
+        ))}
+      </ul>
 
       <h2>Player A Hand</h2>
       <ul>
@@ -389,7 +416,6 @@ const PokerGame = ({ walletAddress }) => {
 
       <h2>Pot: ${pot}</h2>
       <SolBalance userName="Player" walletAddress={walletAddress} />
-      <h2>Computer Balance: ${computerBalance}</h2>
     </div>
   );
 };
