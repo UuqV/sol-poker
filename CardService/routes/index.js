@@ -95,8 +95,8 @@ router.get('/shuffle/', function(req, res, next) {
 });
 
 /* GET cards. */
-router.get('/hand/', function(req, res, next) {
-  
+router.post('/hand/', function(req, res) {
+  const {player} = req.body;
     // Function to deal the initial two cards to the player and computer
   const dealInitialCards = () => {
     if (deck.length < 4) {
@@ -109,7 +109,7 @@ router.get('/hand/', function(req, res, next) {
   };
 
   const cards = dealInitialCards();
-  hands.push(cards);
+  hands.push({[player]: cards});
   console.log('hands', hands);
   res.send(cards);
 });

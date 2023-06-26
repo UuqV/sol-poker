@@ -183,8 +183,8 @@ const PokerGame = ({ walletAddress }) => {
   // Function to deal the initial two cards to the player and computer    
   const dealInitialCards = async () => {
     try {
-      const playerACardsResult = await axios.get('http://localhost:3001/hand/');
-      const playerBCardsResult = await axios.get('http://localhost:3001/hand/');
+      const playerACardsResult = await axios.post('http://localhost:3001/hand/', {player: walletAddress});
+      const playerBCardsResult = await axios.post('http://localhost:3001/hand/', {player: walletAddress});
       setPlayerAHand(playerACardsResult.data);
       setPlayerBHand(playerBCardsResult.data);
       setPotInProgress(true);
