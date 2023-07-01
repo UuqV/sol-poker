@@ -81,7 +81,6 @@ const getTableAddress = async () => {
 router.get('/shuffle/', function(req, res, next) {
   
   deck = initializeDeck();
-  console.log('deck', deck);
 
   hands = [];
   commonCards = [];

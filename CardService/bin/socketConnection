@@ -1,0 +1,30 @@
+
+var WebSocket = require('ws');
+
+const connection = (server) => {
+    const ws = new WebSocket.Server({ server });
+    const connectedClients = [];
+
+    ws.on('connection', (webSocketClient) => {
+        //when a message is received
+        webSocketClient.on('message', (message) => {
+            console.log('message received', message);
+            
+            //for each websocket client
+            ws
+            .clients
+            .forEach( client => {
+                //send the client the current message
+                client.send(`${message}`);
+            });
+            console.log('connectedClients', connectedClients.join(','));
+            
+            connectedClients.push(`${message}`);
+        });
+        if (connectedClients.length > 0) {
+            webSocketClient.send(`${connectedClients.join(',')}`);
+        };
+    });
+}
+
+module.exports = { connection };

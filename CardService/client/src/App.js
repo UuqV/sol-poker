@@ -2,14 +2,24 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import axios from 'axios';
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
-import { Program, AnchorProvider, web3 } from '@project-serum/anchor';
-import store, {connectSocket} from './store';
+import { Program, AnchorProvider, web3, Wallet } from '@project-serum/anchor';
+import store, {connectSocket, addOpponents} from './store';
 import PokerGame from './PokerGame';
 
 
 const App = () => {
   // State
   const [walletAddress, setWalletAddress] = useState(null);
+
+  const getSocket = (walletAddress) => {
+    console.log(walletAddress);
+    const socket = new WebSocket("ws://localhost:3001/echo");
+    socket.addEventListener('message', (message) => {
+        console.log("message", message.data);
+        store.dispatch(addOpponents({opponents: message.data}));
+    });
+    socket.onopen = () => socket.send(walletAddress);
+  }
 
   // Actions
   const checkIfWalletIsConnected = async () => {
@@ -29,7 +39,7 @@ const App = () => {
            * Set the user's publicKey in state to be used later!
            */
           setWalletAddress(response.publicKey.toString());
-          store.dispatch(connectSocket(walletAddress));
+          getSocket(response.publicKey.toString());
         }
       } else {
         alert('Solana object not found! Get a Phantom Wallet 👻');
@@ -46,6 +56,7 @@ const App = () => {
       const response = await solana.connect();
       console.log('Connected with Public Key:', response.publicKey.toString());
       setWalletAddress(response.publicKey.toString());
+      getSocket(response.publicKey.toString());
     }
   };
 

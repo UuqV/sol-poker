@@ -5,21 +5,19 @@ const counterSlice = createSlice({
   initialState: {
     value: 0,
     walletAddress: undefined,
+    opponents: [],
     ws: undefined,
   },
   reducers: {
-    connectSocket: (state, action) => {
-        console.log(action);
-        state.walletAddress = action.payload;
-        const socket = new WebSocket("ws://localhost:3001/echo");
-        socket.addEventListener('message', console.log);
-        socket.onopen = () => socket.send('connected');
-        state.ws = socket;
+    addOpponents: (state, action) => {
+        const { opponents } = action.payload;
+        console.log("opponents", opponents);
+        state.opponents = [ ...state.opponents, opponents.split(',').flat()];
     }
   }
 })
 
-export const { connectSocket } = counterSlice.actions
+export const { addOpponents } = counterSlice.actions
 
 
 const store = configureStore({

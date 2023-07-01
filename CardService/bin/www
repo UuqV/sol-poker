@@ -8,7 +8,8 @@ var app = require('../app');
 var debug = require('debug')('cardservice:server');
 var http = require('http');
 var fs = require('fs');
-var WebSocket = require('ws');
+var socket = require('./socketConnection'); 
+console.log(socket);
 
 /**
  * Get port from environment and store in Express.
@@ -23,25 +24,7 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
-var websocketServer = new WebSocket.Server({ server });
-
-//when a websocket connection is established
-websocketServer.on('connection', (webSocketClient) => {
-  //send feedback to the incoming connection
-  webSocketClient.send('{ "connection" : "ok"}');
-
-  //when a message is received
-  webSocketClient.on('message', (message) => {
-      console.log('message received', message);
-      //for each websocket client
-      websocketServer
-      .clients
-      .forEach( client => {
-          //send the client the current message
-          client.send(`{ "message" : ${message} }`);
-      });
-  });
-});
+var websocketServer = socket.connection(server);
 
 /**
  * Listen on provided port, on all network interfaces.
