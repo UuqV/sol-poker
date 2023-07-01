@@ -6,7 +6,7 @@ import axios from 'axios';
 import SolBalance from '../SolBalance';
 import IDL from "./idl.json";
 import { Buffer } from 'buffer';
-
+import store from '../store';
 window.Buffer = Buffer;
 
 // SystemProgram is a reference to the Solana runtime!
@@ -32,9 +32,11 @@ const PokerGame = ({ walletAddress }) => {
   const [doneInitFlop, setDoneInitFlop] = useState(false);
   const [playerAHand, setPlayerAHand] = useState([]);
   const [playerBHand, setPlayerBHand] = useState([]);
+  const {opponents} = store.getState();
   const [pot, setPot] = useState(0);
   const [potInProgress, setPotInProgress] = useState(false);
   const [playerBalance, setPlayerBalance] = useState(1000);
+  const [opponentList, setOpponentList] = useState(opponents);
 
   useEffect(() => {
     initializeDeck();
@@ -184,9 +186,7 @@ const PokerGame = ({ walletAddress }) => {
   const dealInitialCards = async () => {
     try {
       const playerACardsResult = await axios.post('http://localhost:3001/hand/', {player: walletAddress});
-      const playerBCardsResult = await axios.post('http://localhost:3001/hand/', {player: walletAddress});
       setPlayerAHand(playerACardsResult.data);
-      setPlayerBHand(playerBCardsResult.data);
       setPotInProgress(true);
     } catch (error) {
       console.error(error);
@@ -328,6 +328,16 @@ const PokerGame = ({ walletAddress }) => {
     return maxRank;
   };
 
+  store.subscribe(() => {
+    setOpponentList(
+      store.getState().opponents.filter((address) => {
+        console.log(address, walletAddress.toString());
+        return address[0] !== walletAddress.toString();
+      })
+    )
+  });
+  console.log(opponentList);
+
   // Render the game UI
   return (
     <div>
@@ -363,11 +373,11 @@ const PokerGame = ({ walletAddress }) => {
         ))}
       </ul>
 
-      <h2>Player B Hand</h2>
+      <h2>Other Players</h2>
       <ul>
-        {playerBHand.map((card, index) => (
-          <li key={index}>
-            {card.rank} of {card.suit}
+        {opponentList.map((address) => (
+          <li key={address}>
+            {address}
           </li>
         ))}
       </ul>
