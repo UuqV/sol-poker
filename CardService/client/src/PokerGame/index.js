@@ -157,6 +157,7 @@ const PokerGame = ({ walletAddress }) => {
     console.log(pot_address.toString())
 
     const balance = await connection.getBalance(pot_address, 'confirmed');
+    console.log('poot ---------------balance', balance);
     const pot_balance = balance / 10 ** 9; // Convert lamports to SOL
 
 
@@ -173,6 +174,7 @@ const PokerGame = ({ walletAddress }) => {
       .rpc();
     await confirmTx(txHash, connection);
     const newBalance = await connection.getBalance(pot_address, 'confirmed');
+    console.log('new ---------------balance', newBalance)
     const pot_solBalance = newBalance / 10 ** 9; // Convert lamports to SOL
     setPot(pot_solBalance)
 
