@@ -50,13 +50,6 @@ const PokerGame = ({ walletAddress }) => {
     
   }
 
-  const getSocketConnection = () => {
-    const exampleSocket = new WebSocket("ws://localhost:3001/echo");
-    return exampleSocket;
-  }
-
-  console.log(getSocketConnection());
-
   // Function to initialize the deck of cards
   const initializeDeck = () => {
 
