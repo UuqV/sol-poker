@@ -51,7 +51,7 @@ const PokerGame = ({ walletAddress }) => {
   }
 
   const getSocketConnection = () => {
-    const exampleSocket = new WebSocket("wss://localhost:3001/echo/");
+    const exampleSocket = new WebSocket("ws://localhost:3001/echo");
     return exampleSocket;
   }
 
@@ -62,7 +62,7 @@ const PokerGame = ({ walletAddress }) => {
 
     const fetchData = async () => {
       try {
-        const result = await axios.get('https://localhost:3001/shuffle/');
+        const result = await axios.get('http://localhost:3001/shuffle/');
         const newDeck = result.data['deck'];
         setDeck(newDeck);
         setFlop([]);
@@ -81,7 +81,7 @@ const PokerGame = ({ walletAddress }) => {
   const initializeFlop = async () => {
     const fetchData = async () => {
       try {
-        const result = await axios.get('https://localhost:3001/flop/');
+        const result = await axios.get('http://localhost:3001/flop/');
         const flop = result.data;
         setFlop(flop);
         setDoneInitFlop(true);
@@ -190,8 +190,8 @@ const PokerGame = ({ walletAddress }) => {
   // Function to deal the initial two cards to the player and computer    
   const dealInitialCards = async () => {
     try {
-      const playerACardsResult = await axios.post('https://localhost:3001/hand/', {player: walletAddress});
-      const playerBCardsResult = await axios.post('https://localhost:3001/hand/', {player: walletAddress});
+      const playerACardsResult = await axios.post('http://localhost:3001/hand/', {player: walletAddress});
+      const playerBCardsResult = await axios.post('http://localhost:3001/hand/', {player: walletAddress});
       setPlayerAHand(playerACardsResult.data);
       setPlayerBHand(playerBCardsResult.data);
       setPotInProgress(true);
@@ -204,7 +204,7 @@ const PokerGame = ({ walletAddress }) => {
   const dealCard = () => {
     const fetchData = async () => {
       try {
-        const result = await axios.get('https://localhost:3001/river/');
+        const result = await axios.get('http://localhost:3001/river/');
         const flop = result.data;
         setFlop(flop);
         console.log('flop', flop);

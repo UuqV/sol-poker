@@ -6,12 +6,9 @@
 
 var app = require('../app');
 var debug = require('debug')('cardservice:server');
-var https = require('https');
+var http = require('http');
 var fs = require('fs');
-var privateKey  = fs.readFileSync('Cert:/CurrentUser/My/', 'utf8');
-var certificate = fs.readFileSync('Cert:/CurrentUser/My/', 'utf8');
-
-var credentials = {key: privateKey, cert: certificate};
+var WebSocket = require('ws');
 
 /**
  * Get port from environment and store in Express.
@@ -24,7 +21,27 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = https.createServer(credentials, app);
+var server = http.createServer(app);
+
+var websocketServer = new WebSocket.Server({ server });
+
+//when a websocket connection is established
+websocketServer.on('connection', (webSocketClient) => {
+  //send feedback to the incoming connection
+  webSocketClient.send('{ "connection" : "ok"}');
+
+  //when a message is received
+  webSocketClient.on('message', (message) => {
+
+      //for each websocket client
+      websocketServer
+      .clients
+      .forEach( client => {
+          //send the client the current message
+          client.send(`{ "message" : ${message} }`);
+      });
+  });
+});
 
 /**
  * Listen on provided port, on all network interfaces.
