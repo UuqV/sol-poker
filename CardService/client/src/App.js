@@ -3,6 +3,7 @@ import './App.css';
 import axios from 'axios';
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 import { Program, AnchorProvider, web3 } from '@project-serum/anchor';
+import store, {connectSocket} from './store';
 import PokerGame from './PokerGame';
 
 
@@ -28,6 +29,7 @@ const App = () => {
            * Set the user's publicKey in state to be used later!
            */
           setWalletAddress(response.publicKey.toString());
+          store.dispatch(connectSocket(walletAddress));
         }
       } else {
         alert('Solana object not found! Get a Phantom Wallet 👻');

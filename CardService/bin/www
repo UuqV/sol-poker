@@ -32,7 +32,7 @@ websocketServer.on('connection', (webSocketClient) => {
 
   //when a message is received
   webSocketClient.on('message', (message) => {
-
+      console.log('message received', message);
       //for each websocket client
       websocketServer
       .clients

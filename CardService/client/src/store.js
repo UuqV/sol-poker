@@ -4,20 +4,13 @@ const counterSlice = createSlice({
   name: 'counter',
   initialState: {
     value: 0,
+    walletAddress: undefined,
     ws: undefined,
   },
   reducers: {
-    incremented: state => {
-      // Redux Toolkit allows us to write "mutating" logic in reducers. It
-      // doesn't actually mutate the state because it uses the Immer library,
-      // which detects changes to a "draft state" and produces a brand new
-      // immutable state based off those changes
-      state.value += 1
-    },
-    decremented: state => {
-      state.value -= 1
-    },
-    connectSocket: state => {
+    connectSocket: (state, action) => {
+        console.log(action);
+        state.walletAddress = action.payload;
         const socket = new WebSocket("ws://localhost:3001/echo");
         socket.addEventListener('message', console.log);
         socket.onopen = () => socket.send('connected');
@@ -39,4 +32,3 @@ export default store;
 store.subscribe(() => console.log(store.getState()))
 
 // Still pass action objects to `dispatch`, but they're created for us
-store.dispatch(connectSocket())
