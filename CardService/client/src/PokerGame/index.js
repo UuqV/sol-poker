@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Connection, PublicKey, clusterApiUrl,LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { Program, AnchorProvider, web3, BN, Wallet } from '@project-serum/anchor';
 // const { publicKey, struct, u64, u8, option, } = require('@project-serum/borsh')
+import store, { addStoreFlop } from '../store';
 import axios from 'axios';
 import SolBalance from '../SolBalance';
 import IDL from "./idl.json";
 import { Buffer } from 'buffer';
-import store from '../store';
 window.Buffer = Buffer;
 
 // SystemProgram is a reference to the Solana runtime!
@@ -26,17 +26,29 @@ const opts = {
   preflightCommitment: "processed"
 }
 
+const syncFlop = (flop) => {
+  console.log(flop);
+  const socket = new WebSocket("ws://localhost:3001/echo2");
+  socket.addEventListener('flop', (flop) => {
+      console.log("socket-flop", flop.data);
+      store.dispatch(addStoreFlop({storeFlop: flop.data}));
+  });
+  socket.onopen = () => socket.send(flop);
+}
+
 const PokerGame = ({ walletAddress }) => {
   const [deck, setDeck] = useState([]);
   const [flop, setFlop] = useState([]);
   const [doneInitFlop, setDoneInitFlop] = useState(false);
   const [playerAHand, setPlayerAHand] = useState([]);
   const [playerBHand, setPlayerBHand] = useState([]);
-  const {opponents} = store.getState();
+  const {opponents, storeFlop} = store.getState();
   const [pot, setPot] = useState(0);
   const [potInProgress, setPotInProgress] = useState(false);
   const [playerBalance, setPlayerBalance] = useState(1000);
   const [opponentList, setOpponentList] = useState(opponents);
+  const [storeFlopList, setStoreFlopList] = useState(storeFlop);
+
 
   useEffect(() => {
     initializeDeck();
@@ -79,6 +91,8 @@ const PokerGame = ({ walletAddress }) => {
         const result = await axios.get('http://localhost:3001/flop/');
         const flop = result.data;
         setFlop(flop);
+        store.dispatch(addStoreFlop({storeFlop: flop}));
+        syncFlop(flop);
         setDoneInitFlop(true);
         console.log('flop', flop);
       } catch (error) {
@@ -337,6 +351,13 @@ const PokerGame = ({ walletAddress }) => {
     )
   });
   console.log(opponentList);
+
+  store.subscribe(() => {
+    setStoreFlopList(
+      store.getState().storeFlop
+    )
+  });
+  console.log(storeFlopList);
 
   // Render the game UI
   return (
