@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {TexasHoldem, SixPlusHoldem, Omaha} from 'poker-odds-calc';
 import { Connection, PublicKey, clusterApiUrl,LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { Program, AnchorProvider, web3, BN, Wallet } from '@project-serum/anchor';
 // const { publicKey, struct, u64, u8, option, } = require('@project-serum/borsh')
@@ -81,6 +82,30 @@ const PokerGame = ({ walletAddress }) => {
         setFlop(flop);
         setDoneInitFlop(true);
         console.log('flop', flop);
+
+        const Table = new TexasHoldem();
+        Table
+          .addPlayer(["Qs", "Ks"])
+          .addPlayer(["Qd", "Kd"])
+
+          // .setBoard(["Js","Ts","5h","Td"])
+          // or
+          .boardAction(board => {
+            board
+              .setFlop(["Js", "Ts", "5h"])
+              .setTurn("Td")
+          })
+          ;
+
+        const Result = Table.calculate();
+
+        Result.getPlayers().forEach(player => {
+          console.log(`${player.getName()} - ${player.getHand()} - Wins: ${player.getWinsPercentageString()} - Ties: ${player.getTiesPercentageString()}`);
+        });
+
+        console.log(`Board: ${Result.getBoard()}`);
+        console.log(`Iterations: ${Result.getIterations()}`);
+        console.log(`Time takes: ${Result.getTime()}ms`);
       } catch (error) {
         console.error(error);
       }
@@ -309,9 +334,9 @@ const PokerGame = ({ walletAddress }) => {
     setPot(pot_solBalance)
 
 
-  setPlayerBalance(playerBalance + pot);
-  setPot(0);
-  setPotInProgress(false);
+    setPlayerBalance(playerBalance + pot);
+    setPot(0);
+    setPotInProgress(false);
   };
 
   // Helper function to calculate the rank of the player's hand (for simplicity, let's just use the highest card rank)
