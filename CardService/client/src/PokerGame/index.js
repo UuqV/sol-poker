@@ -82,30 +82,6 @@ const PokerGame = ({ walletAddress }) => {
         setFlop(flop);
         setDoneInitFlop(true);
         console.log('flop', flop);
-
-        const Table = new TexasHoldem();
-        Table
-          .addPlayer(["Qs", "Ks"])
-          .addPlayer(["Qd", "Kd"])
-
-          // .setBoard(["Js","Ts","5h","Td"])
-          // or
-          .boardAction(board => {
-            board
-              .setFlop(["Js", "Ts", "5h"])
-              .setTurn("Td")
-          })
-          ;
-
-        const Result = Table.calculate();
-
-        Result.getPlayers().forEach(player => {
-          console.log(`${player.getName()} - ${player.getHand()} - Wins: ${player.getWinsPercentageString()} - Ties: ${player.getTiesPercentageString()}`);
-        });
-
-        console.log(`Board: ${Result.getBoard()}`);
-        console.log(`Iterations: ${Result.getIterations()}`);
-        console.log(`Time takes: ${Result.getTime()}ms`);
       } catch (error) {
         console.error(error);
       }
@@ -290,6 +266,20 @@ const PokerGame = ({ walletAddress }) => {
 
   // Function to determine the winner based on hand strength
   const determineWinner = async () => {
+    let winner = null;
+    console.log('playerbalance', playerBalance);
+    const fetchWinner = async() => {
+      try {
+        const result = await axios.get('http://localhost:3001/winner/');
+        winner = result.data;
+        console.log('winner', winner);
+        
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchWinner();
+
     const connection = new Connection('https://api.devnet.solana.com');
 
     const program = await getProgram();
