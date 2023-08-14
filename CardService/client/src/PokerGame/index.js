@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {TexasHoldem, SixPlusHoldem, Omaha} from 'poker-odds-calc';
 import { Connection, PublicKey, clusterApiUrl,LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { Program, AnchorProvider, web3, BN, Wallet } from '@project-serum/anchor';
 // const { publicKey, struct, u64, u8, option, } = require('@project-serum/borsh')
@@ -279,6 +280,20 @@ const PokerGame = ({ walletAddress }) => {
 
   // Function to determine the winner based on hand strength
   const determineWinner = async () => {
+    let winner = null;
+    console.log('playerbalance', playerBalance);
+    const fetchWinner = async() => {
+      try {
+        const result = await axios.get('http://localhost:3001/winner/');
+        winner = result.data;
+        console.log('winner', winner);
+        
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchWinner();
+
     const connection = new Connection('https://api.devnet.solana.com');
 
     const program = await getProgram();
@@ -323,9 +338,9 @@ const PokerGame = ({ walletAddress }) => {
     setPot(pot_solBalance)
 
 
-  setPlayerBalance(playerBalance + pot);
-  setPot(0);
-  setPotInProgress(false);
+    setPlayerBalance(playerBalance + pot);
+    setPot(0);
+    setPotInProgress(false);
   };
 
   // Helper function to calculate the rank of the player's hand (for simplicity, let's just use the highest card rank)
