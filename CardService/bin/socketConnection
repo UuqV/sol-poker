@@ -4,6 +4,7 @@ var WebSocket = require('ws');
 const connection = (server) => {
     const ws = new WebSocket.Server({ server });
     const connectedClients = [];
+    const flop = [];
 
     ws.on('connection', (webSocketClient) => {
         //when a message is received
@@ -23,6 +24,24 @@ const connection = (server) => {
         });
         if (connectedClients.length > 0) {
             webSocketClient.send(`${connectedClients.join(',')}`);
+        };
+
+        webSocketClient.on('flop', (flop) => {
+            console.log('in socket file, flop received', flop);
+            
+            //for each websocket client
+            ws
+            .clients
+            .forEach( client => {
+                //send the client the current flop
+                client.send(`${flop}`);
+            });
+            console.log('initFlop', flop.join(','));
+            
+            flop.push(`${flop}`);
+        });
+        if (flop.length > 0) {
+            webSocketClient.send(`${flop.join(',')}`);
         };
     });
 }

@@ -3,7 +3,7 @@ import './App.css';
 import axios from 'axios';
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 import { Program, AnchorProvider, web3, Wallet } from '@project-serum/anchor';
-import store, {connectSocket, addOpponents} from './store';
+import store, {addStoreFlop, addOpponents} from './store';
 import PokerGame from './PokerGame';
 
 
@@ -20,6 +20,16 @@ const App = () => {
     });
     socket.onopen = () => socket.send(walletAddress);
   }
+
+  // const syncFlop = (flop) => {
+  //   console.log(flop);
+  //   const socket = new WebSocket("ws://localhost:3001/echo2");
+  //   socket.addEventListener('message', (message) => {
+  //       console.log("message-flop", message.data);
+  //       store.dispatch(addStoreFlop({storeFlop: message.data}));
+  //   });
+  //   socket.onopen = () => socket.send(flop);
+  // }
 
   // Actions
   const checkIfWalletIsConnected = async () => {
