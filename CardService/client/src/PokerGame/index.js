@@ -6,9 +6,10 @@ import {connect} from 'react-redux';
 
 const PokerGame = ({opponents, table, player}) => {
   const {wallet} = player;
+  const {cards} = table;
 
   useEffect(() => {
-    initialize();
+    store.dispatch(initialize());
   }, []);
 
   return (
@@ -51,7 +52,7 @@ const PokerGame = ({opponents, table, player}) => {
       </ul>
 
       <h2>Pot: ${table.pot}</h2>
-      <SolBalance userName="Player" walletAddress={wallet} />
+      <SolBalance userName="Player" wallet={wallet} />
     </div>
   );
 };

@@ -9,7 +9,7 @@ const pokerSlice = createSlice({
     ws: undefined,
     player: {
       hand: [],
-      walletAddress: undefined,
+      wallet: undefined,
       balance: 0,
     },
     table: {
@@ -27,27 +27,27 @@ const pokerSlice = createSlice({
     },
     addOpponents: (state, action) => {
         const { opponents } = action.payload;
-        state.opponents = [ ...state.opponents, opponents.split(',').flat()];
+        state.opponents = [ ...state.opponents, opponents.split(',').flat() ];
     },
     initialize: (state, action) => {
-      state.table.pot = initializePot(state.walletAddress);
-      state.player.hand = dealInitialCards(state.walletAddress);
+      //state.table.pot = initializePot(state.player.wallet);
+      state.player.hand = dealInitialCards(state.player.wallet);
       state.table.inProgress = true;
     },
     getFlop: (state, action) => {
-      state.cards.append(dealFlop());
+      state.cards = [ ...state.cards, dealFlop() ];
       state.preFlop = false;
     },
     getRiver: (state, action) => {
       state.cards.append(dealCard());
     },
     placeBet: (state, action) => {
-      state.pot = placeBet(state.walletAddress);
+      state.pot = placeBet(state.wallet);
     },
     determineWinner: (state, action) => {
       state.table.pot = 0;
       state.table.inProgress = false;
-      state.player.balance = determineWinner(state.walletAddress, state.player.balance);
+      state.player.balance = determineWinner(state.wallet, state.player.balance);
     }
   }
 })

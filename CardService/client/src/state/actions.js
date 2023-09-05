@@ -79,7 +79,7 @@ export const confirmTx = async (txHash, connection) => {
 };
 
 
-export const initializePot = async (walletAddress) => {
+export const initializePot = async (wallet) => {
   // Connect to the Solana network
   const connection = new Connection('https://api.devnet.solana.com');
 
@@ -106,7 +106,7 @@ export const initializePot = async (walletAddress) => {
     .accounts({
       pot: pot_address,
       master: master_address,
-      house: walletAddress,
+      house: wallet,
       systemProgram: SystemProgram.programId,
     })
     .rpc();
@@ -116,9 +116,10 @@ export const initializePot = async (walletAddress) => {
   return pot_solBalance;
 }
 
-export const dealInitialCards = async (walletAddress) => {
+export const dealInitialCards = async (wallet) => {
   try {
-    const playerACardsResult = await axios.post('http://localhost:3001/hand/', {player: walletAddress});
+    const playerACardsResult = await axios.post('http://localhost:3001/hand/', {player: wallet});
+    console.log('res', playerACardsResult);
     return playerACardsResult.data;
   } catch (error) {
     console.error(error);
@@ -154,7 +155,7 @@ export const dealCard = () => {
   fetchData();
 };
 
-export const placeBet = async (walletAddress) => {
+export const placeBet = async (wallet) => {
   try {
     const connection = new Connection('https://api.devnet.solana.com');
 
@@ -181,7 +182,7 @@ export const placeBet = async (walletAddress) => {
           pot_address,
           pot.lastBetId + 1
         ),
-        house: walletAddress,
+        house: wallet,
       })
       .rpc();
     await confirmTx(txHash, connection);
@@ -194,7 +195,7 @@ export const placeBet = async (walletAddress) => {
 
 };
 
-export const determineWinner = async (walletAddress, playerBalance) => {
+export const determineWinner = async (wallet, playerBalance) => {
   const connection = new Connection('https://api.devnet.solana.com');
 
   const program = await getProgram();
@@ -223,7 +224,7 @@ export const determineWinner = async (walletAddress, playerBalance) => {
   .claimPot(pot.id, bet.id)
     .accounts({
       pot: pot_address,
-      house: walletAddress,
+      house: wallet,
     })
     .rpc();
   await confirmTx(txHash, connection);

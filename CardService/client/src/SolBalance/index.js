@@ -3,13 +3,12 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import {connect} from 'react-redux';
 
 
-function SolBalance({ userName, walletAddress }) {
-  console.log(walletAddress);
+function SolBalance({ userName, wallet }) {
   const [balance, setBalance] = useState(null);
 
   useEffect(() => {
-    getSolBalance(walletAddress);
-  }, [walletAddress]);
+    getSolBalance(wallet);
+  }, [wallet]);
 
   async function getSolBalance(address) {
     const connection = new Connection('https://api.devnet.solana.com');

@@ -87,7 +87,7 @@ const App = (wallet) => {
           {/* Render your connect to wallet button right here */}
           {!wallet && renderNotConnectedContainer()}
         </div>
-        {/* Check for walletAddress and then pass in walletAddress */}
+        {/* Check for wallet and then pass in wallet */}
         {wallet && <PokerGame />}
         <div className="footer-container">
         </div>
