@@ -3,8 +3,8 @@ import {dealInitialCards, dealCard, placeBet, determineWinner} from '../state/ac
 import SolBalance from '../SolBalance';
 import store, { initialize } from '../state/store';
 
-const PokerGame = ({ walletAddress }) => {
-  const {opponents} = store.getState();
+const PokerGame = () => {
+  const {opponents, table, player} = store.getState();
 
   useEffect(() => {
     initialize();
@@ -15,16 +15,16 @@ const PokerGame = ({ walletAddress }) => {
       <button onClick={dealCard}>
         Deal Card to Table
       </button>
-      <button onClick={placeBet} disabled={!potInProgress}>
+      <button onClick={placeBet} disabled={table.inProgress}>
         Place Bet
       </button>
-      <button onClick={determineWinner} disabled={!potInProgress}>
+      <button onClick={determineWinner} disabled={table.inProgress}>
         Determine Winner
       </button>
 
       <h2>Flop</h2>
       <ul>
-        {flop.map((card, index) => (
+        {table.cards.map((card, index) => (
           <li key={index}>
             {card.rank} of {card.suit}
           </li>
@@ -33,7 +33,7 @@ const PokerGame = ({ walletAddress }) => {
 
       <h2>Player Hand</h2>
       <ul>
-        {playerAHand.map((card, index) => (
+        {player.hand.map((card, index) => (
           <li key={index}>
             {card.rank} of {card.suit}
           </li>
@@ -42,15 +42,15 @@ const PokerGame = ({ walletAddress }) => {
 
       <h2>Other Players</h2>
       <ul>
-        {opponentList.map((address) => (
+        {opponents.map((address) => (
           <li key={address}>
             {address}
           </li>
         ))}
       </ul>
 
-      <h2>Pot: ${pot}</h2>
-      <SolBalance userName="Player" walletAddress={walletAddress} />
+      <h2>Pot: ${table.pot}</h2>
+      <SolBalance userName="Player" walletAddress={player.walletAddress} />
     </div>
   );
 };

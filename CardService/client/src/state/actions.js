@@ -79,7 +79,7 @@ export const confirmTx = async (txHash, connection) => {
 };
 
 
-export const initializePot = async () => {
+export const initializePot = async (walletAddress) => {
   // Connect to the Solana network
   const connection = new Connection('https://api.devnet.solana.com');
 
@@ -116,7 +116,7 @@ export const initializePot = async () => {
   return pot_solBalance;
 }
 
-export const dealInitialCards = async () => {
+export const dealInitialCards = async (walletAddress) => {
   try {
     const playerACardsResult = await axios.post('http://localhost:3001/hand/', {player: walletAddress});
     return playerACardsResult.data;
@@ -126,13 +126,12 @@ export const dealInitialCards = async () => {
 };
 
 
-export const initializeFlop = async () => {
+export const dealFlop = async () => {
   const fetchData = async () => {
     try {
       const result = await axios.get('http://localhost:3001/flop/');
       const flop = result.data;
-      setFlop(flop);
-      setDoneInitFlop(true);
+      return flop;
     } catch (error) {
       console.error(error);
     }
@@ -145,9 +144,8 @@ export const dealCard = () => {
   const fetchData = async () => {
     try {
       const result = await axios.get('http://localhost:3001/river/');
-      const flop = result.data;
-      setFlop(flop);
-      console.log('flop', flop);
+      const card = result.data;
+      return card;
     } catch (error) {
       console.error(error);
     }
@@ -156,7 +154,7 @@ export const dealCard = () => {
   fetchData();
 };
 
-export const placeBet = async () => {
+export const placeBet = async (walletAddress) => {
   try {
     const connection = new Connection('https://api.devnet.solana.com');
 
@@ -189,15 +187,14 @@ export const placeBet = async () => {
     await confirmTx(txHash, connection);
     const balance = await connection.getBalance(pot_address, 'confirmed');
     const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
-    setPot(pot_solBalance)
-
+    return pot_solBalance;
   } catch (error) {
     console.log("Error in  ", error)
   }
 
 };
 
-export const determineWinner = async () => {
+export const determineWinner = async (walletAddress, playerBalance) => {
   const connection = new Connection('https://api.devnet.solana.com');
 
   const program = await getProgram();
@@ -232,9 +229,6 @@ export const determineWinner = async () => {
   await confirmTx(txHash, connection);
   const balance = await connection.getBalance(pot_address, 'confirmed');
   const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
-  setPot(pot_solBalance)
 
-  setPlayerBalance(playerBalance + pot);
-  setPot(0);
-  setPotInProgress(false);
+  return (playerBalance + pot);
 };
