@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {dealInitialCards, dealCard, placeBet, determineWinner} from '../state/actions';
 import SolBalance from '../SolBalance';
 import store, { initialize } from '../state/store';
+import {connect} from 'react-redux';
 
-const PokerGame = () => {
-  const {opponents, table, player} = store.getState();
+const PokerGame = ({opponents, table, player}) => {
+  const {wallet} = player;
 
   useEffect(() => {
     initialize();
@@ -50,9 +51,18 @@ const PokerGame = () => {
       </ul>
 
       <h2>Pot: ${table.pot}</h2>
-      <SolBalance userName="Player" walletAddress={player.walletAddress} />
+      <SolBalance userName="Player" walletAddress={wallet} />
     </div>
   );
 };
 
-export default PokerGame;
+const mapStateToProps = (state) => {
+  return {
+    opponents: state.opponents,
+    table: state.table,
+    player: state.player,
+  }
+}
+
+
+export default connect(mapStateToProps)(PokerGame);

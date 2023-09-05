@@ -21,6 +21,10 @@ const pokerSlice = createSlice({
 
   },
   reducers: {
+    setWallet: (state, action) => {
+      const {wallet} = action.payload;
+      state.player.wallet = wallet;
+    },
     addOpponents: (state, action) => {
         const { opponents } = action.payload;
         state.opponents = [ ...state.opponents, opponents.split(',').flat()];
@@ -48,7 +52,7 @@ const pokerSlice = createSlice({
   }
 })
 
-export const { addOpponents, initialize } = pokerSlice.actions
+export const { addOpponents, initialize, setWallet } = pokerSlice.actions
 
 
 const store = configureStore({
