@@ -32,40 +32,6 @@ const getProvider = () => {
   
 }
 
-export const initializeDeck = () => {
-  const fetchData = async () => {
-    try {
-      const result = await axios.get('http://localhost:3001/shuffle/');
-      const newDeck = result.data['deck'];
-      setDeck(newDeck);
-      setFlop([]);
-      setPlayerAHand([]);
-      setPlayerBHand([]);
-      setDoneInitFlop(false);
-      console.log(result);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  fetchData();    
-};
-
-export const initializeFlop = async () => {
-  const fetchData = async () => {
-    try {
-      const result = await axios.get('http://localhost:3001/flop/');
-      const flop = result.data;
-      setFlop(flop);
-      setDoneInitFlop(true);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  fetchData();  
-};
-
 export const getProgram = async () => {
   return new Program(IDL, programID, getProvider());
 };
@@ -112,14 +78,8 @@ export const confirmTx = async (txHash, connection) => {
   });
 };
 
-export const initialize = async () => {
-  initializeDeck();
-  initializePot();
-  dealInitialCards();
-}
 
-
-const initializePot = async () => {
+export const initializePot = async () => {
   // Connect to the Solana network
   const connection = new Connection('https://api.devnet.solana.com');
 
@@ -153,18 +113,32 @@ const initializePot = async () => {
   await confirmTx(txHash, connection);
   const newBalance = await connection.getBalance(pot_address, 'confirmed');
   const pot_solBalance = newBalance / 10 ** 9; // Convert lamports to SOL
-  setPot(pot_solBalance)
-
+  return pot_solBalance;
 }
 
-const dealInitialCards = async () => {
+export const dealInitialCards = async () => {
   try {
     const playerACardsResult = await axios.post('http://localhost:3001/hand/', {player: walletAddress});
-    setPlayerAHand(playerACardsResult.data);
-    setPotInProgress(true);
+    return playerACardsResult.data;
   } catch (error) {
     console.error(error);
   }
+};
+
+
+export const initializeFlop = async () => {
+  const fetchData = async () => {
+    try {
+      const result = await axios.get('http://localhost:3001/flop/');
+      const flop = result.data;
+      setFlop(flop);
+      setDoneInitFlop(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  fetchData();  
 };
 
 export const dealCard = () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {initialize, dealInitialCards, dealCard, placeBet, determineWinner} from '../state/actions';
+import {dealInitialCards, dealCard, placeBet, determineWinner} from '../state/actions';
 import SolBalance from '../SolBalance';
-import store from '../state/store';
+import store, { initialize } from '../state/store';
 
 const PokerGame = ({ walletAddress }) => {
   const {opponents} = store.getState();
@@ -31,7 +31,7 @@ const PokerGame = ({ walletAddress }) => {
         ))}
       </ul>
 
-      <h2>Player A Hand</h2>
+      <h2>Player Hand</h2>
       <ul>
         {playerAHand.map((card, index) => (
           <li key={index}>

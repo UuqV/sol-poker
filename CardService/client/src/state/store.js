@@ -1,4 +1,5 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit'
+import { initializePot, dealInitialCards } from './actions';
 
 const pokerSlice = createSlice({
   name: 'poker',
@@ -8,13 +9,13 @@ const pokerSlice = createSlice({
     opponents: [],
     ws: undefined,
     player: {
-      playerHand: [],
+      hand: [],
       walletAddress: undefined,
-      playerBalance: 0,
+      balance: 0,
     },
     table: {
       pot: 0,
-      roundInProgress: false,
+      inProgress: false,
       preFlop: true,
       flop: [],
       cards: [],
@@ -24,13 +25,17 @@ const pokerSlice = createSlice({
   reducers: {
     addOpponents: (state, action) => {
         const { opponents } = action.payload;
-        console.log("opponents", opponents);
         state.opponents = [ ...state.opponents, opponents.split(',').flat()];
+    },
+    initialize: (state, action) => {
+      state.pot = initializePot();
+      state.player.hand = dealInitialCards();
+      state.table.roundinProgress = true;
     }
   }
 })
 
-export const { addOpponents } = pokerSlice.actions
+export const { addOpponents, initialize } = pokerSlice.actions
 
 
 const store = configureStore({
@@ -39,7 +44,4 @@ const store = configureStore({
 
 export default store;
 
-// Can still subscribe to the store
 store.subscribe(() => console.log(store.getState()))
-
-// Still pass action objects to `dispatch`, but they're created for us
