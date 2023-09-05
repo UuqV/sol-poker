@@ -14,7 +14,6 @@ const App = (wallet) => {
   const getSocket = () => {
     const socket = new WebSocket("ws://localhost:3001/echo");
     socket.addEventListener('message', (message) => {
-        console.log("message", message.data);
         store.dispatch(addOpponents({opponents: message.data}));
     });
     socket.onopen = () => socket.send(wallet);
@@ -33,7 +32,6 @@ const App = (wallet) => {
             'Connected with Public Key:',
             response.publicKey.toString()
           );
-          console.log('window.solana', window.solana)
           /*
            * Set the user's publicKey in state to be used later!
            */

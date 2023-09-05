@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Connection, PublicKey } from '@solana/web3.js';
+import {connect} from 'react-redux';
+
 
 function SolBalance({ userName, walletAddress }) {
+  console.log(walletAddress);
   const [balance, setBalance] = useState(null);
 
   useEffect(() => {
-    const address = walletAddress;
-    getSolBalance(address);
-  }, []);
+    getSolBalance(walletAddress);
+  }, [walletAddress]);
 
   async function getSolBalance(address) {
     const connection = new Connection('https://api.devnet.solana.com');
@@ -33,4 +35,11 @@ function SolBalance({ userName, walletAddress }) {
   );
 }
 
-export default SolBalance;
+const mapStateToProps = (state) => {
+  return {
+    wallet: state.player.wallet,
+  }
+}
+
+
+export default connect(mapStateToProps)(SolBalance);
