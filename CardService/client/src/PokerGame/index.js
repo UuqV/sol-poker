@@ -4,8 +4,8 @@ import SolBalance from '../SolBalance';
 import {connect} from 'react-redux';
 
 const PokerGame = ({opponents, table, player}) => {
-  const {wallet} = player;
-  console.log("wallet", wallet);
+  const {wallet, hand} = player;
+  console.log('hand', hand);
   const {cards} = table;
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const PokerGame = ({opponents, table, player}) => {
 
       <h2>Flop</h2>
       <ul>
-        {table.cards.map((card, index) => (
+        {cards.map((card, index) => (
           <li key={index}>
             {card.rank} of {card.suit}
           </li>
@@ -35,7 +35,7 @@ const PokerGame = ({opponents, table, player}) => {
 
       <h2>Player Hand</h2>
       <ul>
-        {player.hand.map((card, index) => (
+        {hand.map((card, index) => (
           <li key={index}>
             {card.rank} of {card.suit}
           </li>
