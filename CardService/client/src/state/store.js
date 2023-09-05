@@ -1,12 +1,25 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit'
 
-const counterSlice = createSlice({
-  name: 'counter',
+const pokerSlice = createSlice({
+  name: 'poker',
   initialState: {
     value: 0,
     walletAddress: undefined,
     opponents: [],
     ws: undefined,
+    player: {
+      playerHand: [],
+      walletAddress: undefined,
+      playerBalance: 0,
+    },
+    table: {
+      pot: 0,
+      roundInProgress: false,
+      preFlop: true,
+      flop: [],
+      cards: [],
+    }
+
   },
   reducers: {
     addOpponents: (state, action) => {
@@ -17,11 +30,11 @@ const counterSlice = createSlice({
   }
 })
 
-export const { addOpponents } = counterSlice.actions
+export const { addOpponents } = pokerSlice.actions
 
 
 const store = configureStore({
-  reducer: counterSlice.reducer
+  reducer: pokerSlice.reducer
 })
 
 export default store;
