@@ -22,7 +22,7 @@ const pokerSlice = createSlice({
   },
   reducers: {
     setWallet: (state, action) => {
-      const {wallet} = action.payload;
+      const { wallet } = action.payload;
       state.player.wallet = wallet;
     },
     addOpponents: (state, action) => {
@@ -30,8 +30,10 @@ const pokerSlice = createSlice({
         state.opponents = [ ...state.opponents, opponents.split(',').flat() ];
     },
     initialize: (state, action) => {
+      const { cards } = action.payload;
+      console.log(action.payload);
       //state.table.pot = initializePot(state.player.wallet);
-      state.player.hand = dealInitialCards(state.player.wallet);
+      state.player.hand = cards;
       state.table.inProgress = true;
     },
     getFlop: (state, action) => {

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import {dealInitialCards, dealCard, placeBet, determineWinner} from '../state/actions';
+import {dealCard, placeBet, determineWinner, init} from '../state/actions';
 import SolBalance from '../SolBalance';
-import store, { initialize } from '../state/store';
 import {connect} from 'react-redux';
 
 const PokerGame = ({opponents, table, player}) => {
   const {wallet} = player;
+  console.log("wallet", wallet);
   const {cards} = table;
 
   useEffect(() => {
-    store.dispatch(initialize());
+    init(wallet);
   }, []);
 
   return (

@@ -3,6 +3,7 @@ import IDL from "../PokerGame/idl.json";
 import { Connection, PublicKey, clusterApiUrl,LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { Program, AnchorProvider, web3, BN, Wallet } from '@project-serum/anchor';
 import { Buffer } from 'buffer';
+import store, { initialize } from '../state/store';
 import axios from 'axios';
 window.Buffer = Buffer;
 
@@ -116,11 +117,10 @@ export const initializePot = async (wallet) => {
   return pot_solBalance;
 }
 
-export const dealInitialCards = async (wallet) => {
+export const init = async (wallet) => {
   try {
     const playerACardsResult = await axios.post('http://localhost:3001/hand/', {player: wallet});
-    console.log('res', playerACardsResult);
-    return playerACardsResult.data;
+    store.dispatch(initialize({ cards: playerACardsResult.data }));
   } catch (error) {
     console.error(error);
   }

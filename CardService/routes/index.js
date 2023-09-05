@@ -70,27 +70,17 @@ const getTableAddress = async () => {
   )[0];
 };
 
+router.post('/hand/', function(req, res) {
 
-/* GET cards. */
-router.get('/shuffle/', function(req, res, next) {
-  
   deck = initializeDeck();
 
   hands = [];
   commonCards = [];
-  resJson = {
-    deck: deck,
-    hands: hands,
-    commonCards: commonCards
-  }
-  
-  res.send(resJson);
-});
 
-/* GET cards. */
-router.post('/hand/', function(req, res) {
   const {player} = req.body;
-    // Function to deal the initial two cards to the player and computer
+
+  console.log(player);
+
   const dealInitialCards = () => {
     if (deck.length < 4) {
       res.errored('Not enough cards in the deck!');
