@@ -215,27 +215,19 @@ const PokerGame = ({ walletAddress }) => {
       const connection = new Connection('https://api.devnet.solana.com');
 
       const program = await getProgram();
-      console.log('program', program);
-
       const master_address = await getMasterAddress();
-      console.log("master_address",master_address);
       const master = await program.account.master.fetch(
         master_address ?? (await getMasterAddress())
       );
-      console.log(master, 'master')
 
       const pot_address = await getPotAddress(master.lastId);
-      console.log("pot_address",pot_address);
 
       const pot = await program.account.pot.fetch(
         pot_address ?? (await getPotAddress(master.lastId))
       );
-      console.log('pot_address', pot_address.toString())
       const pot_balance = await connection.getBalance(pot_address, 'confirmed') / 10 ** 9; // Convert lamports to SOL
-      console.log('pot_balance', pot_balance);
 
       const house_address = await getHouseAddress();
-      console.log("house_address",house_address.toString());
 
       const txHash = await program.methods
       .buyBet(pot.id)
@@ -249,7 +241,6 @@ const PokerGame = ({ walletAddress }) => {
         })
         .rpc();
       await confirmTx(txHash, connection);
-      console.log(txHash, "txHash")
       const balance = await connection.getBalance(pot_address, 'confirmed');
       const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
       setPot(pot_solBalance)
@@ -258,9 +249,6 @@ const PokerGame = ({ walletAddress }) => {
       console.log("Error in  ", error)
     }
 
-    // setPot(pot + 10); // Increment the pot by 10 (you can adjust the bet amount as needed)
-    // setPlayerBalance(playerBalance - 10);
-    // setComputerBalance(computerBalance - 10);
   };
 
   // Function to determine the winner based on hand strength
@@ -279,21 +267,15 @@ const PokerGame = ({ walletAddress }) => {
     const pot = await program.account.pot.fetch(
       pot_address ?? (await getPotAddress())
     );
-    console.log('pot_address', pot_address.toString());
 
     const bet_address = await getBetAddress(
       pot_address,
       pot.lastBetId
     )
-    console.log('bet_address', bet_address.toString());
 
     const bet = await program.account.bet.fetch(bet_address)
 
     const house_address = await getHouseAddress();
-    console.log('walletAddress', walletAddress.toString())
-
-    console.log('pot id', pot.id);
-    console.log('bet id', bet.id);
 
     const txHash = await program.methods
     .claimPot(pot.id, bet.id)
@@ -303,7 +285,6 @@ const PokerGame = ({ walletAddress }) => {
       })
       .rpc();
     await confirmTx(txHash, connection);
-    console.log(txHash, "txHash")
     const balance = await connection.getBalance(pot_address, 'confirmed');
     const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
     setPot(pot_solBalance)
@@ -331,12 +312,10 @@ const PokerGame = ({ walletAddress }) => {
   store.subscribe(() => {
     setOpponentList(
       store.getState().opponents.filter((address) => {
-        console.log(address, walletAddress.toString());
         return address[0] !== walletAddress.toString();
       })
     )
   });
-  console.log(opponentList);
 
   // Render the game UI
   return (

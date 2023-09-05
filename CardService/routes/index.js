@@ -28,17 +28,11 @@ const getProvider = () => {
   const provider = new anchor.AnchorProvider(
     connection, web3.solana, opts.preflightCommitment,
   );
-  console.log('provider',provider);
   return provider;
 
 }
 
-const getProgram = async () => {
-  // Get metadata about your solana program
-  console.log('programID',programID);
-  // const idl = await Program.fetchIdl(programID, getProvider());
-
-  // Create a program that you can call
+const getProgram = async () => {;
   return new anchor.Program(IDL, programID, getProvider());
 };
 
@@ -109,7 +103,6 @@ router.post('/hand/', function(req, res) {
 
   const cards = dealInitialCards();
   hands.push({[player]: cards});
-  console.log('hands', hands);
   res.send(cards);
 });
 
@@ -148,7 +141,6 @@ router.get('/river/', function(req, res, next) {
   const cards = dealFlop();
   commonCards.push(cards);
   commonCards = commonCards.flat();
-  console.log('commonCards', commonCards);
   res.send(commonCards);
 });
 
@@ -161,49 +153,16 @@ router.get('/table/', async function (req, res, next) {
     // Fetch the program account data
     const accountInfo = await connection.getAccountInfo(new web3.PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"));
     const program = await getProgram();
-    console.log('program', program);
-    console.log('accountInfo', accountInfo);
-    console.log(accountInfo.data.toString());
-    // const keypair = Keypair.generate(); // Generate a new key pair
-    // const privateKey = keypair.secretKey;
-    // console.log('Private Key:', privateKey);
-    // Initialize the anchor workspace
-    // const provider = AnchorProvider.local();
-
-    // Set the provider's connection
-    // provider.connection = connection;
-    // // Set the provider's wallet with the private key
-    // provider.wallet = new Wallet(new web3.Account(privateKey));
-
-    // // Create an anchor program instance
-    // const program = new Program("Poker", new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"), provider);
     const table_address = await getTableAddress();
-    console.log("table_address",table_address);
-    // // Call the desired program function
     const accounts = await connection.getParsedProgramAccounts(programID);
-    console.log(accounts);
     const create_round = await program.rpc.createRound();
-    console.log('create_round', create_round)
-
-    // Perform additional operations if needed
-
-    console.log('Function executed successfully.');
-
-
-
   } catch (error) {
     console.log("Error in  ", error)
   }
 });
 
 router.get('/winner/', function(req, res, next) {
-  
-
-  // Function to determine the winner based on hand strength
   const determineWinner = () => {
-    // You can implement your own hand evaluation logic here
-    // For simplicity, let's assume the player wins if they have a higher rank than the computer
-
     let winner;
     let otherWinners = [];
     hands.forEach((hand) => {
