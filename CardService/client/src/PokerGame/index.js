@@ -7,10 +7,6 @@ const PokerGame = ({opponents, table, player}) => {
   const {wallet, hand} = player;
   const {cards} = table;
 
-  useEffect(() => {
-    init(wallet);
-  }, []);
-
   return (
     <div>
       <button onClick={dealCard}>

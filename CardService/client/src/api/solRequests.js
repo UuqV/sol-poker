@@ -98,13 +98,6 @@ export const initializePot = async (wallet) => {
 
   const house_address = await getHouseAddress();
 
-  console.log('addresses', {
-    pot: pot_address,
-    master: master_address,
-    house: wallet,
-    systemProgram: SystemProgram.programId,
-  });
-
   const txHash = await program.methods
   .createPot(new BN(100000000))
     .accounts({

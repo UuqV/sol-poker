@@ -6,6 +6,7 @@ import { Program, AnchorProvider, web3, Wallet } from '@project-serum/anchor';
 import store, {connectSocket, addOpponents} from './state/store';
 import PokerGame from './PokerGame';
 import {setWallet} from './state/store';
+import { init } from './state/actions';
 import {connect} from 'react-redux';
 
 
@@ -34,6 +35,7 @@ const App = ({wallet}) => {
           );
 
           store.dispatch(setWallet({wallet: response.publicKey.toString()}));
+          init(wallet);
           getSocket(response.publicKey.toString());
         }
       } else {
