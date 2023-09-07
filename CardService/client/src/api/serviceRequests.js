@@ -4,7 +4,6 @@ import axios from 'axios';
 export const getHandCards = async (wallet) => {
     try {
       const result = await axios.post('http://localhost:3001/hand/', {player: wallet});
-      console.log('result', result);
       return result.data;
     } catch (error) {
         console.error(error);

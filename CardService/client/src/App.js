@@ -9,7 +9,7 @@ import {setWallet} from './state/store';
 import {connect} from 'react-redux';
 
 
-const App = (wallet) => {
+const App = ({wallet}) => {
 
   const getSocket = () => {
     const socket = new WebSocket("ws://localhost:3001/echo");
@@ -32,9 +32,7 @@ const App = (wallet) => {
             'Connected with Public Key:',
             response.publicKey.toString()
           );
-          /*
-           * Set the user's publicKey in state to be used later!
-           */
+
           store.dispatch(setWallet({wallet: response.publicKey.toString()}));
           getSocket(response.publicKey.toString());
         }

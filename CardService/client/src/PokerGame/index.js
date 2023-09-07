@@ -5,7 +5,6 @@ import {connect} from 'react-redux';
 
 const PokerGame = ({opponents, table, player}) => {
   const {wallet, hand} = player;
-  console.log('hand', hand);
   const {cards} = table;
 
   useEffect(() => {

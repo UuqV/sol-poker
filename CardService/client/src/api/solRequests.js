@@ -1,5 +1,5 @@
 
-import IDL from "../PokerGame/idl.json";
+import IDL from "./idl.json";
 import { Connection, PublicKey, clusterApiUrl,LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { Program, AnchorProvider, web3, BN, Wallet } from '@project-serum/anchor';
 import { Buffer } from 'buffer';
@@ -83,13 +83,13 @@ export const initializePot = async (wallet) => {
   // Fetch the program account data
   const accountInfo = await connection.getAccountInfo(new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"));
   const program = await getProgram();
-  
+
   const master_address = await getMasterAddress();
 
   const master = await program.account.master.fetch(
     master_address ?? (await getMasterAddress())
   );
-  
+
   const pot_address = await getPotAddress(master.lastId + 1);
 
   const balance = await connection.getBalance(pot_address, 'confirmed');
@@ -97,6 +97,13 @@ export const initializePot = async (wallet) => {
 
 
   const house_address = await getHouseAddress();
+
+  console.log('addresses', {
+    pot: pot_address,
+    master: master_address,
+    house: wallet,
+    systemProgram: SystemProgram.programId,
+  });
 
   const txHash = await program.methods
   .createPot(new BN(100000000))

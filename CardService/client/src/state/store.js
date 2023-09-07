@@ -30,7 +30,6 @@ const pokerSlice = createSlice({
         state.opponents = [ ...state.opponents, opponents.split(',').flat() ];
     },
     initialize: (state, action) => {
-      console.log('action', action.payload);
       const { cards } = action.payload;
       state.player.hand = cards;
       state.table.inProgress = true;
