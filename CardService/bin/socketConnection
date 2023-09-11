@@ -3,7 +3,7 @@ var WebSocket = require('ws');
 
 const connection = (server) => {
     const ws = new WebSocket.Server({ server });
-    const connectedClients = [];
+    const connectedClients = new Set([]);
 
     ws.on('connection', (webSocketClient) => {
         //when a message is received
@@ -17,14 +17,15 @@ const connection = (server) => {
                 //send the client the current message
                 client.send(`${message}`);
             });
-            console.log('connectedClients', connectedClients.join(','));
             
-            connectedClients.push(`${message}`);
+            connectedClients.add(`${message}`);
+            console.log('connectedClients', connectedClients);
         });
         if (connectedClients.length > 0) {
-            webSocketClient.send(`${connectedClients.join(',')}`);
+            webSocketClient.send(`${connectedClients}`);
         };
     });
+    
 }
 
 module.exports = { connection };

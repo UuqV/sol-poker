@@ -12,12 +12,13 @@ import {connect} from 'react-redux';
 
 const App = ({wallet}) => {
 
-  const getSocket = () => {
+  const getSocket = (w) => {
     const socket = new WebSocket("ws://localhost:3001/echo");
     socket.addEventListener('message', (message) => {
+        console.log(message);
         store.dispatch(addOpponents({opponents: message.data}));
     });
-    socket.onopen = () => socket.send(wallet);
+    socket.onopen = () => socket.send(w);
   }
 
   // Actions
@@ -36,6 +37,7 @@ const App = ({wallet}) => {
 
           store.dispatch(setWallet({wallet: response.publicKey.toString()}));
           init(wallet);
+          console.log(wallet, response.publicKey.toString());
           getSocket(response.publicKey.toString());
         }
       } else {
@@ -53,7 +55,6 @@ const App = ({wallet}) => {
       const response = await solana.connect();
       console.log('Connected with Public Key:', response.publicKey.toString());
       store.dispatch(setWallet({wallet: response.publicKey.toString()}));
-      getSocket(response.publicKey.toString());
     }
   };
 
