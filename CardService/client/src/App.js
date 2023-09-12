@@ -16,8 +16,9 @@ const App = ({wallet}) => {
     const socket = new WebSocket("ws://localhost:3001/echo");
     socket.addEventListener('message', (message) => {
         console.log(message);
-        store.dispatch(addOpponents({opponents: message.data}));
+        store.dispatch(addOpponents({opponents: JSON.parse(message.data)}));
     });
+    console.log(w);
     socket.onopen = () => socket.send(w);
   }
 

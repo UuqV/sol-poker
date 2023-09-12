@@ -10,13 +10,21 @@ const connection = (server) => {
         webSocketClient.on('message', (message) => {
             console.log('message received', message);
             
+            connectedClients.add(`${message}`);
+            //for each websocket client
+            ws
+            .clients
+            .forEach( client => {
+                //send the client the current message
+                client.send(JSON.stringify([...connectedClients]));
+            });
+            console.log('connectedClients', connectedClients);
+            
         });
-        connectedClients.add(`${message}`);
         if (connectedClients.length > 0) {
-            webSocketClient.send(`${connectedClients}`);
+            webSocketClient.send(JSON.stringify([...connenectedClients]));
         };
     });
-    
 }
 
 module.exports = { connection };
