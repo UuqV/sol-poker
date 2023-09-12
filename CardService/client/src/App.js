@@ -19,7 +19,7 @@ const App = ({wallet}) => {
         store.dispatch(addOpponents({opponents: JSON.parse(message.data)}));
     });
     console.log(w);
-    socket.onopen = () => socket.send(w);
+    socket.onopen = () => socket.send(JSON.stringify({action: "CONNECTION", wallet: w}));
   }
 
   // Actions

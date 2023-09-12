@@ -9,8 +9,13 @@ const connection = (server) => {
         //when a message is received
         webSocketClient.on('message', (message) => {
             console.log('message received', message);
+
+            const {action, wallet} = JSON.parse(message);
+            switch (action) {
+                case "CONNECTION":
+                    connectedClients.add(`${wallet}`);
+            }
             
-            connectedClients.add(`${message}`);
             //for each websocket client
             ws
             .clients
