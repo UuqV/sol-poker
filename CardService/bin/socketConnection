@@ -8,22 +8,25 @@ const connection = (server) => {
     ws.on('connection', (webSocketClient) => {
         //when a message is received
         webSocketClient.on('message', (message) => {
+
+            const sendToAll = (message) => {
+                ws
+                .clients
+                .forEach( client => {
+                    //send the client the current message
+                    client.send(JSON.stringify(message));
+                });
+                
+            }
+
             console.log('message received', message);
 
             const {action, wallet} = JSON.parse(message);
             switch (action) {
                 case "CONNECTION":
                     connectedClients.add(`${wallet}`);
+                    sendToAll([...connectedClients]);
             }
-            
-            //for each websocket client
-            ws
-            .clients
-            .forEach( client => {
-                //send the client the current message
-                client.send(JSON.stringify([...connectedClients]));
-            });
-            console.log('connectedClients', connectedClients);
             
         });
         if (connectedClients.length > 0) {
