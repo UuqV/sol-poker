@@ -27,7 +27,7 @@ const pokerSlice = createSlice({
     },
     addOpponents: (state, action) => {
         const { opponents } = action.payload;
-        state.opponents = [ ...state.opponents, opponents.split(',').flat() ];
+        state.opponents = opponents.split(',');
     },
     initialize: (state, action) => {
       const { cards } = action.payload;
