@@ -4,6 +4,7 @@ var WebSocket = require('ws');
 const connection = (server) => {
     const ws = new WebSocket.Server({ server });
     const connectedClients = new Set([]);
+    const roundStarted = false;
 
     ws.on('connection', (webSocketClient) => {
         //when a message is received
@@ -19,7 +20,6 @@ const connection = (server) => {
                 
             }
 
-            console.log('message received', message);
 
             const {action, wallet} = JSON.parse(message);
             switch (action) {
@@ -30,7 +30,8 @@ const connection = (server) => {
             
         });
         if (connectedClients.length > 0) {
-            webSocketClient.send(JSON.stringify([...connenectedClients]));
+            roundStarted = true;
+            webSocketClient.send(JSON.stringify({roundStarted, opponents: [...connenectedClients]}));
         };
     });
 }
