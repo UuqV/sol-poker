@@ -42,8 +42,8 @@ export const getCard = () => {
 export const fetchWinner = async() => {
   try {
     const result = await axios.get('http://localhost:3001/winner/');
-    winner = result.data;
-    return card;
+    const winner = result.data;
+    return winner;
   } catch (error) {
     console.error(error);
   }
