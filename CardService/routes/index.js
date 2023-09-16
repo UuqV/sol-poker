@@ -6,6 +6,8 @@ var express = require('express');
 const cors = require('cors');
 var router = express.Router();
 var IDL  = require("./idl");
+const TexasHoldem = require('poker-odds-calc').TexasHoldem;
+
 
 // Enable CORS for all routes
 router.use(cors());
@@ -28,11 +30,17 @@ const getProvider = () => {
   const provider = new anchor.AnchorProvider(
     connection, web3.solana, opts.preflightCommitment,
   );
+  console.log('provider',provider);
   return provider;
 
 }
 
-const getProgram = async () => {;
+const getProgram = async () => {
+  // Get metadata about your solana program
+  console.log('programID',programID);
+  // const idl = await Program.fetchIdl(programID, getProvider());
+
+  // Create a program that you can call
   return new anchor.Program(IDL, programID, getProvider());
 };
 
@@ -42,11 +50,20 @@ const initializeDeck = () => {
   const suits = ['♠', '♣', '♥', '♦'];
   const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
+  const pokerSuits = ['s', 'c', 'h', 'd'];
+  const pokerRanks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J','Q', 'K', 'A'];
+
   const newDeck = [];
 
   for (const suit of suits) {
     for (const rank of ranks) {
-      newDeck.push({ suit, rank });
+      newDeck.push({ 
+        suit, 
+        rank, 
+        pokerSuit: pokerSuits[suits.indexOf(suit)], 
+        pokerRank: pokerRanks[ranks.indexOf(rank)],
+        card: pokerRanks[ranks.indexOf(rank)] + pokerSuits[suits.indexOf(suit)]
+       });
     }
   }
 
@@ -70,17 +87,32 @@ const getTableAddress = async () => {
   )[0];
 };
 
-router.post('/hand/', function(req, res) {
+const joinCards = (cards) => {
+  return cards.map((card) => card.pokerRank + card.pokerSuit[0]);
+}
 
+
+/* GET cards. */
+router.get('/shuffle/', function(req, res, next) {
+  
   deck = initializeDeck();
 
   hands = [];
   commonCards = [];
+  resJson = {
+    deck: deck,
+    hands: hands,
+    commonCards: commonCards
+  }
+  console.log('After shuffle: ', resJson);
+  res.send(resJson);
+});
 
+
+router.post('/hand/', function(req, res) {
   const {player} = req.body;
-
-  console.log(player);
-
+  console.log('calling /hand api, player: ', player);
+    // Function to deal the initial two cards to the player and computer
   const dealInitialCards = () => {
     if (deck.length < 4) {
       res.errored('Not enough cards in the deck!');
@@ -92,7 +124,13 @@ router.post('/hand/', function(req, res) {
   };
 
   const cards = dealInitialCards();
-  hands.push({[player]: cards});
+  cardsShort = cards.map((card) => card.card).join('');
+  hands.push({
+    'player': player,
+    'cards': cards,
+    'cardsShort': cardsShort
+    });
+  console.log('hands', hands);
   res.send(cards);
 });
 
@@ -115,6 +153,21 @@ router.get('/flop/', function(req, res, next) {
   res.send(commonCards);
 });
 
+
+router.get('/deck/', function(req, res, next) {
+  res.send(deck);
+});
+
+
+router.get('/hands', function(req, res, next) {
+  res.send(hands);
+});
+
+
+router.get('/common-cards', function(req, res, next) {
+  res.send(commonCards);
+});
+
 router.get('/river/', function(req, res, next) {
   
   // Function to deal the initial two cards to the player and computer
@@ -131,6 +184,7 @@ router.get('/river/', function(req, res, next) {
   const cards = dealFlop();
   commonCards.push(cards);
   commonCards = commonCards.flat();
+  console.log('commonCards', commonCards);
   res.send(commonCards);
 });
 
@@ -143,41 +197,93 @@ router.get('/table/', async function (req, res, next) {
     // Fetch the program account data
     const accountInfo = await connection.getAccountInfo(new web3.PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"));
     const program = await getProgram();
+    console.log('program', program);
+    console.log('accountInfo', accountInfo);
+    console.log(accountInfo.data.toString());
+    // const keypair = Keypair.generate(); // Generate a new key pair
+    // const privateKey = keypair.secretKey;
+    // console.log('Private Key:', privateKey);
+    // Initialize the anchor workspace
+    // const provider = AnchorProvider.local();
+
+    // Set the provider's connection
+    // provider.connection = connection;
+    // // Set the provider's wallet with the private key
+    // provider.wallet = new Wallet(new web3.Account(privateKey));
+
+    // // Create an anchor program instance
+    // const program = new Program("Poker", new PublicKey("HzawsjeijhERaZtCts76hKhFZjmWyRhBXoZG1B1KbHKU"), provider);
     const table_address = await getTableAddress();
+    console.log("table_address",table_address);
+    // // Call the desired program function
     const accounts = await connection.getParsedProgramAccounts(programID);
+    console.log(accounts);
     const create_round = await program.rpc.createRound();
+    console.log('create_round', create_round)
+
+    // Perform additional operations if needed
+
+    console.log('Function executed successfully.');
+
+
+
   } catch (error) {
     console.log("Error in  ", error)
   }
 });
 
+
 router.get('/winner/', function(req, res, next) {
+  
   const determineWinner = () => {
-    let winner;
-    let otherWinners = [];
+    const Table = new TexasHoldem();
+
     hands.forEach((hand) => {
-      const playerRank = getPlayerHandRank(hand);
-      if (!winner) {
-        winner = hand;
-        return;
-      }
-      const winnerRank = getPlayerHandRank(winner);
-      
-      if (playerRank > winnerRank) {
-        winner = hand;
-      } else if (playerRank === winnerRank) {
-        otherWinners.push(player);
-      }
+      console.log('each hand', hand);
+      card0 = hand.cards[0].pokerRank + hand.cards[0].pokerSuit[0];
+      card1 = hand.cards[1].pokerRank + hand.cards[1].pokerSuit[0];
+      Table.addPlayer([card0, card1]);
+    });
 
-    })
-    return [winner, otherWinners].flat();
-  };
+    flop = joinCards(commonCards);
+    console.log('flop', flop);
 
-  // Helper function to calculate the rank of the player's hand (for simplicity, let's just use the highest card rank)
-  const getPlayerHandRank = (hand) => {
-    const ranks = hand.map((card) => card.rank);
-    const maxRank = Math.max(...ranks);
-    return maxRank;
+    Table
+      .setBoard(flop);
+
+    const Result = Table.calculate();
+
+    let winnerPercentage = -1;
+    let winner;
+    Result.getPlayers().forEach(player => {
+      console.log('player.getWinsPercentage', player.getWinsPercentage());
+      console.log(`${player.getName()} - ${player.getHand()} - Wins: ${player.getWinsPercentageString()} - Ties: ${player.getTiesPercentageString()}`);
+      if (player.getWinsPercentage() > winnerPercentage) {
+        winnerPercentage = player.getWinsPercentage();
+        winner = player;
+      }
+    });
+
+    let winnerPublicKey;
+
+    hands.forEach((hand) => {
+      if (hand.cardsShort === winner.getHand()) {
+        console.log('winner-key', hand.player);
+        winnerPublicKey = hand.player;
+        hand.winner = true;
+        console.log(hand);
+        console.log('winner', winner);
+      }
+    });
+
+    console.log(`Board: ${Result.getBoard()}`);
+    console.log(`Iterations: ${Result.getIterations()}`);
+    console.log(`Time takes: ${Result.getTime()}ms`);
+    deck = initializeDeck();
+
+    hands = [];
+    commonCards = [];
+    res.send(winnerPublicKey);
   };
 
   const result = determineWinner();
