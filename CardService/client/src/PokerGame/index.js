@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {dealCard, placeBet, determineWinner, init} from '../state/actions';
+import {dealCard, placeBet, determineWinner} from '../state/actions';
 import SolBalance from '../SolBalance';
 import {connect} from 'react-redux';
 

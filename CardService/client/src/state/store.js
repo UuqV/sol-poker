@@ -1,5 +1,5 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit'
-import { initializePot, dealInitialCards, dealFlop, placeBet, dealCard, determineWinner } from './actions';
+import { dealFlop, placeBet, dealCard, determineWinner } from './actions';
 
 const pokerSlice = createSlice({
   name: 'poker',
@@ -45,9 +45,10 @@ const pokerSlice = createSlice({
       state.pot = placeBet(state.wallet);
     },
     determineWinner: (state, action) => {
+      const {winner} = action.payload;
       state.table.pot = 0;
       state.table.inProgress = false;
-      state.player.balance = determineWinner(state.wallet, state.player.balance);
+      state.player.balance = determineWinner(winner, state.player.balance);
     }
   }
 })

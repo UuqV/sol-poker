@@ -1,6 +1,6 @@
 import store, { initialize } from '../state/store';
-import { getHandCards, getFlop, getCard } from '../api/serviceRequests';
-import { initializePot } from '../api/solRequests';
+import { getHandCards, getFlop, getCard, fetchWinner } from '../api/serviceRequests';
+import { initializePot, rewardWinner } from '../api/solRequests';
 
 export const init = async (wallet) => {
   try {
@@ -25,5 +25,6 @@ export const placeBet = () => {
 }
 
 export const determineWinner = () => {
-
+  const winner = fetchWinner();
+  store.dispatch(rewardWinner({winner}));
 };

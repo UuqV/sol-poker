@@ -153,7 +153,7 @@ export const placeBet = async (wallet) => {
 
 };
 
-export const determineWinner = async (wallet, playerBalance) => {
+export const rewardWinner = async (wallet, playerBalance) => {
   const connection = new Connection('https://api.devnet.solana.com');
 
   const program = await getProgram();
