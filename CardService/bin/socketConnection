@@ -1,3 +1,5 @@
+import { deal } from '../routes/index';
+
 
 var WebSocket = require('ws');
 
@@ -5,7 +7,7 @@ const connection = (server) => {
     const ws = new WebSocket.Server({ server });
     const connectedClients = new Set([]);
     const roundStarted = false;
-    const flop = [];
+    const commonCards = [];
 
     ws.on('connection', (webSocketClient) => {
         //when a message is received
@@ -27,6 +29,12 @@ const connection = (server) => {
                 case "CONNECTION":
                     connectedClients.add(`${wallet}`);
                     sendToAll([...connectedClients]);
+                case "DEAL":
+                    // If there aren't currently any cards, deal 3, effectively making a "flop"
+                    const cards = commonCards.length() == 0 ? deal(3) : deal(1);
+                    commonCards.push(cards);
+                    commonCards = commonCards.flat();
+                    sendToAll([...connectedClients]);
             }
             
         });
@@ -35,23 +43,6 @@ const connection = (server) => {
             webSocketClient.send(JSON.stringify({roundStarted, opponents: [...connenectedClients]}));
         };
 
-        webSocketClient.on('flop', (flop) => {
-            console.log('in socket file, flop received', flop);
-            
-            //for each websocket client
-            ws
-            .clients
-            .forEach( client => {
-                //send the client the current flop
-                client.send(`${flop}`);
-            });
-            console.log('initFlop', flop.join(','));
-            
-            flop.push(`${flop}`);
-        });
-        if (flop.length > 0) {
-            webSocketClient.send(`${flop.join(',')}`);
-        };
     });
 }
 

@@ -135,19 +135,7 @@ router.post('/hand/', function(req, res) {
 });
 
 router.get('/flop/', function(req, res, next) {
-  
-  // Function to deal the initial two cards to the player and computer
-  const dealFlop = () => {
-    if (deck.length < 4) {
-      res.errored('Not enough cards in the deck!');
-      return;
-    }
-
-    const flopCards = deck.splice(0, 3);
-    return flopCards;
-  };
-
-  const cards = dealFlop();
+  const cards = deal(3);
   commonCards.push(cards);
   commonCards = commonCards.flat();
   res.send(commonCards);
@@ -169,19 +157,7 @@ router.get('/common-cards', function(req, res, next) {
 });
 
 router.get('/river/', function(req, res, next) {
-  
-  // Function to deal the initial two cards to the player and computer
-  const dealFlop = () => {
-    if (deck.length < 4) {
-      res.errored('Not enough cards in the deck!');
-      return;
-    }
-
-    const flopCards = deck.splice(0, 1);
-    return flopCards;
-  };
-
-  const cards = dealFlop();
+  const cards = deal(1);
   commonCards.push(cards);
   commonCards = commonCards.flat();
   console.log('commonCards', commonCards);
@@ -295,5 +271,14 @@ router.get('/winner/', function(req, res, next) {
   res.send(result);
 });
 
+export const deal = (numCards) => {
+  if (deck.length < 4) {
+    res.errored('Not enough cards in the deck!');
+    return;
+  }
+
+  const flopCards = deck.splice(0, numCards);
+  return flopCards;
+};
 
 module.exports = router;
