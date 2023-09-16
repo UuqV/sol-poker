@@ -5,6 +5,7 @@ const connection = (server) => {
     const ws = new WebSocket.Server({ server });
     const connectedClients = new Set([]);
     const roundStarted = false;
+    const flop = [];
 
     ws.on('connection', (webSocketClient) => {
         //when a message is received
@@ -32,6 +33,24 @@ const connection = (server) => {
         if (connectedClients.length > 0) {
             roundStarted = true;
             webSocketClient.send(JSON.stringify({roundStarted, opponents: [...connenectedClients]}));
+        };
+
+        webSocketClient.on('flop', (flop) => {
+            console.log('in socket file, flop received', flop);
+            
+            //for each websocket client
+            ws
+            .clients
+            .forEach( client => {
+                //send the client the current flop
+                client.send(`${flop}`);
+            });
+            console.log('initFlop', flop.join(','));
+            
+            flop.push(`${flop}`);
+        });
+        if (flop.length > 0) {
+            webSocketClient.send(`${flop.join(',')}`);
         };
     });
 }

@@ -38,3 +38,13 @@ export const getCard = () => {
 
   fetchData();
 };
+
+export const fetchWinner = async() => {
+  try {
+    const result = await axios.get('http://localhost:3001/winner/');
+    const winner = result.data;
+    return winner;
+  } catch (error) {
+    console.error(error);
+  }
+}
