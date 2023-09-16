@@ -3,33 +3,22 @@ import './App.css';
 import axios from 'axios';
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 import { Program, AnchorProvider, web3, Wallet } from '@project-serum/anchor';
-import store, {addStoreFlop, addOpponents} from './store';
+import store, {connectSocket, addOpponents} from './state/store';
 import PokerGame from './PokerGame';
+import {setWallet} from './state/store';
+import { init } from './state/actions';
+import {connect} from 'react-redux';
 
 
-const App = () => {
-  // State
-  const [walletAddress, setWalletAddress] = useState(null);
+const App = ({wallet}) => {
 
-  const getSocket = (walletAddress) => {
-    console.log(walletAddress);
+  const getSocket = () => {
     const socket = new WebSocket("ws://localhost:3001/echo");
     socket.addEventListener('message', (message) => {
-        console.log("message", message.data);
         store.dispatch(addOpponents({opponents: message.data}));
     });
-    socket.onopen = () => socket.send(walletAddress);
+    socket.onopen = () => socket.send(wallet);
   }
-
-  // const syncFlop = (flop) => {
-  //   console.log(flop);
-  //   const socket = new WebSocket("ws://localhost:3001/echo2");
-  //   socket.addEventListener('message', (message) => {
-  //       console.log("message-flop", message.data);
-  //       store.dispatch(addStoreFlop({storeFlop: message.data}));
-  //   });
-  //   socket.onopen = () => socket.send(flop);
-  // }
 
   // Actions
   const checkIfWalletIsConnected = async () => {
@@ -44,11 +33,9 @@ const App = () => {
             'Connected with Public Key:',
             response.publicKey.toString()
           );
-          console.log('window.solana', window.solana)
-          /*
-           * Set the user's publicKey in state to be used later!
-           */
-          setWalletAddress(response.publicKey.toString());
+
+          store.dispatch(setWallet({wallet: response.publicKey.toString()}));
+          init(wallet);
           getSocket(response.publicKey.toString());
         }
       } else {
@@ -65,7 +52,7 @@ const App = () => {
     if (solana) {
       const response = await solana.connect();
       console.log('Connected with Public Key:', response.publicKey.toString());
-      setWalletAddress(response.publicKey.toString());
+      store.dispatch(setWallet({wallet: response.publicKey.toString()}));
       getSocket(response.publicKey.toString());
     }
   };
@@ -98,10 +85,10 @@ const App = () => {
           <p className="header">Poker Game</p>
           <p className="sub-text">Poker Game</p>
           {/* Render your connect to wallet button right here */}
-          {!walletAddress && renderNotConnectedContainer()}
+          {!wallet && renderNotConnectedContainer()}
         </div>
-        {/* Check for walletAddress and then pass in walletAddress */}
-        {walletAddress && <PokerGame walletAddress={walletAddress} />}
+        {/* Check for wallet and then pass in wallet */}
+        {wallet && <PokerGame />}
         <div className="footer-container">
         </div>
       </div>
@@ -109,5 +96,11 @@ const App = () => {
   );
 };
 
+const mapStateToProps = (state) => {
+  return {
+    wallet: state.player.wallet
+  }
+}
 
-export default App;
+
+export default connect(mapStateToProps)(App);
