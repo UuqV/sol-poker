@@ -28,13 +28,14 @@ const connection = (server) => {
             switch (action) {
                 case "CONNECTION":
                     connectedClients.add(`${wallet}`);
+                     // The spread operator here makes the set into an array for serialization
                     sendToAll([...connectedClients]);
                 case "DEAL":
                     // If there aren't currently any cards, deal 3, effectively making a "flop"
                     const cards = commonCards.length() == 0 ? deal(3) : deal(1);
                     commonCards.push(cards);
                     commonCards = commonCards.flat();
-                    sendToAll([...connectedClients]);
+                    sendToAll(commonCards);
             }
             
         });
