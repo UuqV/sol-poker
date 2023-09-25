@@ -8,19 +8,10 @@ import PokerGame from './PokerGame';
 import {setWallet} from './state/store';
 import { init } from './state/actions';
 import {connect} from 'react-redux';
+import { getSocket } from './socket';
 
 
 const App = ({wallet}) => {
-
-  const getSocket = (w) => {
-    const socket = new WebSocket("ws://localhost:3001/echo");
-    socket.addEventListener('message', (message) => {
-        console.log(message);
-        store.dispatch(addOpponents(JSON.parse(message.data)));
-    });
-    console.log(w);
-    socket.onopen = () => socket.send(JSON.stringify({action: "CONNECTION", wallet: w}));
-  }
 
   // Actions
   const checkIfWalletIsConnected = async () => {

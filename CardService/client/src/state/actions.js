@@ -5,8 +5,6 @@ import { initializePot, rewardWinner } from '../api/solRequests';
 export const init = async (wallet) => {
   try {
     initializePot(wallet);
-    const playerCards = await getHandCards(wallet);
-    store.dispatch(initialize({ cards: playerCards }));
   } catch (error) {
     console.error(error);
   }

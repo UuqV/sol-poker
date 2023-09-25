@@ -1,13 +1,10 @@
-import { deal } from '../routes/index';
-
-
 var WebSocket = require('ws');
+const { GameState } = require('../GameState');
 
 const connection = (server) => {
     const ws = new WebSocket.Server({ server });
     const connectedClients = new Set([]);
     const roundStarted = false;
-    const commonCards = [];
 
     ws.on('connection', (webSocketClient) => {
         //when a message is received
@@ -29,13 +26,12 @@ const connection = (server) => {
                 case "CONNECTION":
                     connectedClients.add(`${wallet}`);
                      // The spread operator here makes the set into an array for serialization
-                    sendToAll([...connectedClients]);
+                    sendToAll({action: "CONNECTION", payload: [...connectedClients]});
                 case "DEAL":
                     // If there aren't currently any cards, deal 3, effectively making a "flop"
-                    const cards = commonCards.length() == 0 ? deal(3) : deal(1);
-                    commonCards.push(cards);
-                    commonCards = commonCards.flat();
-                    sendToAll(commonCards);
+                    console.log(GameState.commonCards);
+                    const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
+                    sendToAll({action: "DEAL", payload: cards});
             }
             
         });
