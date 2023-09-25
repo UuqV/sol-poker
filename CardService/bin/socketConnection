@@ -27,7 +27,7 @@ const connection = (server) => {
 
             if (action == "CONNECTION") {
                 connectedClients.add(`${wallet}`);
-                    // The spread operator here makes the set into an array for serialization
+                // The spread operator here makes the set into an array for serialization
                 sendToAll({action: "CONNECTION", payload: [...connectedClients]});
             } else if (action == "DEAL") {
                 const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);

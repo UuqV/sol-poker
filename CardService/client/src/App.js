@@ -30,7 +30,6 @@ const App = ({wallet}) => {
           store.dispatch(setWallet({wallet: response.publicKey.toString()}));
           socket.send(JSON.stringify({action: "CONNECTION", wallet: response.publicKey.toString()}));
           init(wallet);
-          console.log(wallet, response.publicKey.toString());
         }
       } else {
         alert('Solana object not found! Get a Phantom Wallet 👻');
