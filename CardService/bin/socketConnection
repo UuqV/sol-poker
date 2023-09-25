@@ -20,18 +20,22 @@ const connection = (server) => {
                 
             }
 
-
             const {action, wallet} = JSON.parse(message);
+
+            
+            console.log('action', action);
+
             switch (action) {
                 case "CONNECTION":
                     connectedClients.add(`${wallet}`);
                      // The spread operator here makes the set into an array for serialization
                     sendToAll({action: "CONNECTION", payload: [...connectedClients]});
                 case "DEAL":
-                    // If there aren't currently any cards, deal 3, effectively making a "flop"
-                    console.log(GameState.commonCards);
                     const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
                     sendToAll({action: "DEAL", payload: cards});
+                case "HAND":
+                    const hand = GameState.dealHand();
+                    sendToAll({action: "HAND", payload: hand});
             }
             
         });

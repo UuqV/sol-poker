@@ -8,8 +8,8 @@ export const getSocket = (w) => {
         switch (action) {
           case "CONNECTION":
             store.dispatch(addOpponents({opponents: payload}));
-          case "DEAL":
-            store.dispatch(initialize({ cards: payload }));
+          case "HAND":
+            store.dispatch(initialize(payload));
       }
     });
     socket.onopen = () => socket.send(JSON.stringify({action: "CONNECTION", wallet: w}));

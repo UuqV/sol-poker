@@ -30,7 +30,7 @@ const PokerGame = ({opponents, table, player}) => {
 
       <h2>Player Hand</h2>
       <ul>
-        {hand.map((card, index) => (
+        {hand && hand.map((card, index) => (
           <li key={index}>
             {card.rank} of {card.suit}
           </li>

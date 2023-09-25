@@ -86,22 +86,26 @@ class State {
     return winnerPublicKey;
   };
 
-  deal = (numCards) => {
-    if (this.deck.length < 4) {
-      res.errored('Not enough cards in the deck!');
-      return;
-    }
-  
-    const cards = this.deck.splice(0, numCards);
+  dealCommon = (numCards) => {
+    const cards = this.deal(numCards);
       
     this.commonCards.push(cards);
     this.commonCards = this.commonCards.flat();
     return this.commonCards;
   };
 
+  deal = (numCards) => {
+    if (this.deck.length < 4) {
+      res.errored('Not enough cards in the deck!');
+      return;
+    }
+  
+    return this.deck.splice(0, numCards);
+  }
+
   dealHand = (player) => {
     const cards = this.deal(2);
-    cardsShort = cards.map((card) => card.card).join('');
+    const cardsShort = cards.map((card) => card.card).join('');
     const hand = {
       'player': player,
       'cards': cards,
