@@ -8,7 +8,7 @@ import PokerGame from './PokerGame';
 import {setWallet} from './state/store';
 import { init } from './state/actions';
 import {connect} from 'react-redux';
-import { getSocket } from './socket';
+import socket from './socket';
 
 
 const App = ({wallet}) => {
@@ -28,9 +28,9 @@ const App = ({wallet}) => {
           );
 
           store.dispatch(setWallet({wallet: response.publicKey.toString()}));
+          socket.send(JSON.stringify({action: "CONNECTION", wallet: response.publicKey.toString()}));
           init(wallet);
           console.log(wallet, response.publicKey.toString());
-          getSocket(response.publicKey.toString());
         }
       } else {
         alert('Solana object not found! Get a Phantom Wallet 👻');

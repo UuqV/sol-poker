@@ -19,30 +19,25 @@ const connection = (server) => {
                 });
                 
             }
-
+            console.log('message', JSON.parse(message));
             const {action, wallet} = JSON.parse(message);
 
             
             console.log('action', action);
 
-            switch (action) {
-                case "CONNECTION":
-                    connectedClients.add(`${wallet}`);
-                     // The spread operator here makes the set into an array for serialization
-                    sendToAll({action: "CONNECTION", payload: [...connectedClients]});
-                case "DEAL":
-                    const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
-                    sendToAll({action: "DEAL", payload: cards});
-                case "HAND":
-                    const hand = GameState.dealHand();
-                    sendToAll({action: "HAND", payload: hand});
+            if (action == "CONNECTION") {
+                connectedClients.add(`${wallet}`);
+                    // The spread operator here makes the set into an array for serialization
+                sendToAll({action: "CONNECTION", payload: [...connectedClients]});
+            } else if (action == "DEAL") {
+                const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
+                sendToAll({action: "DEAL", payload: cards});
+            } else if (action == "HAND") {
+                const hand = GameState.dealHand();
+                sendToAll({action: "HAND", payload: hand});
             }
             
         });
-        if (connectedClients.length > 0) {
-            roundStarted = true;
-            webSocketClient.send(JSON.stringify({roundStarted, opponents: [...connenectedClients]}));
-        };
 
     });
 }
