@@ -26,8 +26,10 @@ const connection = (server) => {
 
             const startRound = () => {
                 sendToAll({action: "CLEAR"});
+                roundStarted = true;
                 turn = 0;
-                clientsInRound = connectedClients;
+                // Creates a copy instead of a reference
+                clientsInRound = Object.assign({}, connectedClients);
                 console.log('clientsInRound', Object.keys(clientsInRound));
                 GameState.initializeDeck();
                 const hands = GameState.dealHands(Object.keys(clientsInRound));
@@ -41,7 +43,8 @@ const connection = (server) => {
 
             if (action == "CONNECTION") {
                 connectedClients[wallet] = webSocketClient;
-                if (Object.keys(connectedClients).length > 0 && roundStarted == false) {
+                console.log('roundStarted', roundStarted);
+                if (Object.keys(connectedClients).length > 1 && roundStarted == false) {
                     startRound();
                 }
                 // The spread operator here makes the set into an array for serialization
@@ -57,7 +60,7 @@ const connection = (server) => {
                 clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
             } else if (action == "BET") {
                 clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: false}));
-                console.log(GameState.commonCards.length);
+                console.log('clientsInRound', Object.keys(clientsInRound));
                 if (turn < Object.keys(clientsInRound).length - 1) {
                     turn++;
                     clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
