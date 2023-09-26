@@ -68,7 +68,7 @@ const connection = (server) => {
                     sendToAll({action: "DEAL", payload: cards});
                     clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
                 } else {
-                    console.log(GameState.determineWinner());
+                    clientsInRound[GameState.determineWinner()].send(JSON.stringify({action: "WINNER"}));
                     startRound();
                 }
             }

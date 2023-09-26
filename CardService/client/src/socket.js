@@ -14,6 +14,8 @@ socket.addEventListener('message', (message) => {
         store.dispatch(getFlop(payload));
     } else if (action == "CLEAR") {
         store.dispatch(clearTable());
+    } else if (action == "WINNER") {
+        alert("WINNER!");
     }
 });
 
