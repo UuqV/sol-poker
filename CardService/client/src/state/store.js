@@ -48,6 +48,10 @@ const pokerSlice = createSlice({
     placeBet: (state, action) => {
       state.pot = placeBet(state.wallet);
     },
+    clearTable: (state, action) => { 
+      state.table.cards = [];
+      state.player.hand = [];
+    },
     determineWinner: (state, action) => {
       const {winner} = action.payload;
       state.table.pot = 0;
@@ -57,7 +61,7 @@ const pokerSlice = createSlice({
   }
 })
 
-export const { addOpponents, initialize, setWallet, takeTurn, getFlop } = pokerSlice.actions
+export const { addOpponents, initialize, setWallet, takeTurn, getFlop, clearTable } = pokerSlice.actions
 
 
 const store = configureStore({
