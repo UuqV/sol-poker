@@ -8,17 +8,10 @@ import PokerGame from './PokerGame';
 import {setWallet} from './state/store';
 import { init } from './state/actions';
 import {connect} from 'react-redux';
+import socket from './socket';
 
 
 const App = ({wallet}) => {
-
-  const getSocket = () => {
-    const socket = new WebSocket("ws://localhost:3001/echo");
-    socket.addEventListener('message', (message) => {
-        store.dispatch(addOpponents({opponents: message.data}));
-    });
-    socket.onopen = () => socket.send(wallet);
-  }
 
   // Actions
   const checkIfWalletIsConnected = async () => {
@@ -35,8 +28,8 @@ const App = ({wallet}) => {
           );
 
           store.dispatch(setWallet({wallet: response.publicKey.toString()}));
+          socket.send(JSON.stringify({action: "CONNECTION", wallet: response.publicKey.toString()}));
           init(wallet);
-          getSocket(response.publicKey.toString());
         }
       } else {
         alert('Solana object not found! Get a Phantom Wallet 👻');
@@ -53,7 +46,6 @@ const App = ({wallet}) => {
       const response = await solana.connect();
       console.log('Connected with Public Key:', response.publicKey.toString());
       store.dispatch(setWallet({wallet: response.publicKey.toString()}));
-      getSocket(response.publicKey.toString());
     }
   };
 

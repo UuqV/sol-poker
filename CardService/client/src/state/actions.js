@@ -1,12 +1,12 @@
 import store, { initialize } from '../state/store';
 import { getHandCards, getFlop, getCard, fetchWinner } from '../api/serviceRequests';
 import { initializePot, rewardWinner } from '../api/solRequests';
+import socket from "../socket";
 
 export const init = async (wallet) => {
   try {
     initializePot(wallet);
-    const playerCards = await getHandCards(wallet);
-    store.dispatch(initialize({ cards: playerCards }));
+    socket.send(JSON.stringify({action: "HAND"}));
   } catch (error) {
     console.error(error);
   }

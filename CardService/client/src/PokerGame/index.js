@@ -9,9 +9,6 @@ const PokerGame = ({opponents, table, player}) => {
 
   return (
     <div>
-      <button onClick={dealCard}>
-        Deal Card to Table
-      </button>
       <button onClick={placeBet} disabled={table.inProgress}>
         Place Bet
       </button>
@@ -30,7 +27,7 @@ const PokerGame = ({opponents, table, player}) => {
 
       <h2>Player Hand</h2>
       <ul>
-        {hand.map((card, index) => (
+        {hand && hand.map((card, index) => (
           <li key={index}>
             {card.rank} of {card.suit}
           </li>
@@ -39,7 +36,7 @@ const PokerGame = ({opponents, table, player}) => {
 
       <h2>Other Players</h2>
       <ul>
-        {opponents.map((address) => (
+        {opponents && opponents.map((address) => (
           <li key={address}>
             {address}
           </li>
