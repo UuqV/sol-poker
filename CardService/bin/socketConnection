@@ -42,9 +42,13 @@ const connection = (server) => {
                     turn++;
                     connectedClients[Object.keys(connectedClients)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
                 }
-                else {
+                else if (GameState.commonCards.length < 4) {
+                    turn = 0;
                     const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
                     sendToAll({action: "DEAL", payload: cards});
+                } else {
+                    turn = 0;
+                    GameState.determineWinner();
                 }
             }
             

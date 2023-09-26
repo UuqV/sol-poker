@@ -1,4 +1,4 @@
-import store, {connectSocket, addOpponents, initialize, takeTurn} from './state/store';
+import store, {connectSocket, addOpponents, initialize, takeTurn, getFlop} from './state/store';
 
 const socket = new WebSocket("ws://localhost:3001/echo");
 socket.addEventListener('message', (message) => {
@@ -10,6 +10,8 @@ socket.addEventListener('message', (message) => {
         store.dispatch(initialize(payload));
     } else if (action == "TURN") {
         store.dispatch(takeTurn(payload));
+    } else if (action == "DEAL") {
+        store.dispatch(getFlop(payload));
     }
 });
 

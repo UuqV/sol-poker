@@ -38,7 +38,8 @@ const pokerSlice = createSlice({
       state.table.inProgress = true;
     },
     getFlop: (state, action) => {
-      state.cards = [ ...state.cards, dealFlop() ];
+      state.table.cards.push(action.payload);
+      state.table.cards = state.table.cards.flat();
       state.preFlop = false;
     },
     getRiver: (state, action) => {
@@ -56,7 +57,7 @@ const pokerSlice = createSlice({
   }
 })
 
-export const { addOpponents, initialize, setWallet, takeTurn } = pokerSlice.actions
+export const { addOpponents, initialize, setWallet, takeTurn, getFlop } = pokerSlice.actions
 
 
 const store = configureStore({
