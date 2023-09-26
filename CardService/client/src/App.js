@@ -28,6 +28,7 @@ const App = ({wallet}) => {
           );
 
           store.dispatch(setWallet({wallet: response.publicKey.toString()}));
+          console.log('socket', wallet);
           socket.send(JSON.stringify({action: "CONNECTION", wallet: response.publicKey.toString()}));
           init(wallet);
         }
@@ -46,6 +47,7 @@ const App = ({wallet}) => {
       const response = await solana.connect();
       console.log('Connected with Public Key:', response.publicKey.toString());
       store.dispatch(setWallet({wallet: response.publicKey.toString()}));
+      socket.send(JSON.stringify({action: "CONNECTION", wallet: response.publicKey.toString()}));
     }
   };
 

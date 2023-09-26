@@ -30,8 +30,8 @@ const pokerSlice = createSlice({
         const { opponents } = action.payload;
         state.opponents = opponents;
     },
-    startTurn: (state, action) => {
-        state.player.isTurn = true;
+    takeTurn: (state, action) => {
+      state.player.isTurn = action.payload;
     },
     initialize: (state, action) => {
       state.player.hand = action.payload;
@@ -56,7 +56,7 @@ const pokerSlice = createSlice({
   }
 })
 
-export const { addOpponents, initialize, setWallet, startTurn } = pokerSlice.actions
+export const { addOpponents, initialize, setWallet, takeTurn } = pokerSlice.actions
 
 
 const store = configureStore({

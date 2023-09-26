@@ -1,11 +1,11 @@
-import store, { initialize } from '../state/store';
+import store, { initialize, takeTurn } from '../state/store';
 import { getHandCards, getFlop, getCard, fetchWinner } from '../api/serviceRequests';
 import { initializePot, rewardWinner } from '../api/solRequests';
 import socket from "../socket";
 
 export const init = async (wallet) => {
   try {
-    initializePot(wallet);
+    //initializePot(wallet);
     socket.send(JSON.stringify({action: "HAND"}));
   } catch (error) {
     console.error(error);
@@ -21,7 +21,8 @@ export const dealCard = () => {
 };
 
 export const placeBet = () => {
-
+  store.dispatch(takeTurn());
+  socket.send(JSON.stringify({action: "BET"}));
 }
 
 export const determineWinner = () => {

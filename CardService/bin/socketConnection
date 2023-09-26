@@ -19,10 +19,12 @@ const connection = (server) => {
                 
             }
             const {action, wallet} = JSON.parse(message);
+            console.log('Received WS Event', action);
 
 
             if (action == "CONNECTION") {
                 connectedClients[wallet] = webSocketClient;
+                console.log(wallet, Object.keys(connectedClients));
                 // The spread operator here makes the set into an array for serialization
                 sendToAll({action: "CONNECTION", payload: Object.keys(connectedClients)});
             } else if (action == "DEAL") {
@@ -33,7 +35,17 @@ const connection = (server) => {
                 hands.forEach( hand => {
                     connectedClients[hand.player].send(JSON.stringify({action: "HAND", payload: hand.cards}));
                 });
-                connectedClients[Object.keys(connectedClients)[turn]].send(JSON.stringify({action: "TURN"}));
+                connectedClients[Object.keys(connectedClients)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
+            } else if (action == "BET") {
+                connectedClients[Object.keys(connectedClients)[turn]].send(JSON.stringify({action: "TURN", payload: false}));
+                if (turn < Object.keys(connectedClients).length - 1) {
+                    turn++;
+                    connectedClients[Object.keys(connectedClients)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
+                }
+                else {
+                    const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
+                    sendToAll({action: "DEAL", payload: cards});
+                }
             }
             
         });
