@@ -3,13 +3,12 @@ const { GameState } = require('../GameState');
 
 const connection = (server) => {
     const ws = new WebSocket.Server({ server });
-    const connectedClients = new Set([]);
-    const roundStarted = false;
+    const connectedClients = [];
+    let turn = 0;
 
-    ws.on('connection', (webSocketClient) => {
+    ws.on('connection', (webSocketClient) => { 
         //when a message is received
         webSocketClient.on('message', (message) => {
-
             const sendToAll = (message) => {
                 ws
                 .clients
@@ -19,22 +18,22 @@ const connection = (server) => {
                 });
                 
             }
-            console.log('message', JSON.parse(message));
             const {action, wallet} = JSON.parse(message);
 
-            
-            console.log('action', action);
 
             if (action == "CONNECTION") {
-                connectedClients.add(`${wallet}`);
+                connectedClients[wallet] = webSocketClient;
                 // The spread operator here makes the set into an array for serialization
-                sendToAll({action: "CONNECTION", payload: [...connectedClients]});
+                sendToAll({action: "CONNECTION", payload: Object.keys(connectedClients)});
             } else if (action == "DEAL") {
                 const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
                 sendToAll({action: "DEAL", payload: cards});
             } else if (action == "HAND") {
-                const hand = GameState.dealHand();
-                sendToAll({action: "HAND", payload: hand});
+                const hands = GameState.dealHands(Object.keys(connectedClients));
+                hands.forEach( hand => {
+                    connectedClients[hand.player].send(JSON.stringify({action: "HAND", payload: hand.cards}));
+                });
+                connectedClients[Object.keys(connectedClients)[turn]].send(JSON.stringify({action: "TURN"}));
             }
             
         });

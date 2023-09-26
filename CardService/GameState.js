@@ -33,7 +33,7 @@ class State {
       [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
     }
     
-    this.hands = [];
+    this.hands = {};
     this.commonCards = [];
     this.deck = newDeck;
 
@@ -103,17 +103,17 @@ class State {
     return this.deck.splice(0, numCards);
   }
 
-  dealHand = (player) => {
-    const cards = this.deal(2);
-    const cardsShort = cards.map((card) => card.card).join('');
-    const hand = {
-      'player': player,
-      'cards': cards,
-      'cardsShort': cardsShort
-      };
-    this.hands.push(hand);
-    console.log('hands', this.hands);
-    return hand;
+  dealHands = (wallets) => {
+    this.hands = wallets.map((wallet) => {
+      const cards = this.deal(2);
+      const cardsShort = cards.map((card) => card.card).join('');
+      return {
+        'player': wallet,
+        'cards': cards,
+        'cardsShort': cardsShort
+        };
+    });
+    return this.hands;
   }
 
 }

@@ -11,6 +11,7 @@ const pokerSlice = createSlice({
       hand: [],
       wallet: undefined,
       balance: 0,
+      isTurn: false,
     },
     table: {
       pot: 0,
@@ -29,9 +30,11 @@ const pokerSlice = createSlice({
         const { opponents } = action.payload;
         state.opponents = opponents;
     },
+    startTurn: (state, action) => {
+        state.player.isTurn = true;
+    },
     initialize: (state, action) => {
-      console.log('payload', action.payload);
-      state.player.hand = action.payload.cards;
+      state.player.hand = action.payload;
       state.table.inProgress = true;
     },
     getFlop: (state, action) => {
@@ -53,7 +56,7 @@ const pokerSlice = createSlice({
   }
 })
 
-export const { addOpponents, initialize, setWallet } = pokerSlice.actions
+export const { addOpponents, initialize, setWallet, startTurn } = pokerSlice.actions
 
 
 const store = configureStore({

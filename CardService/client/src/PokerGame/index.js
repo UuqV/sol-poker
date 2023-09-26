@@ -4,16 +4,13 @@ import SolBalance from '../SolBalance';
 import {connect} from 'react-redux';
 
 const PokerGame = ({opponents, table, player}) => {
-  const {wallet, hand} = player;
+  const {wallet, hand, isTurn} = player;
   const {cards} = table;
 
   return (
     <div>
-      <button onClick={placeBet} disabled={table.inProgress}>
+      <button onClick={placeBet} disabled={!player.isTurn}>
         Place Bet
-      </button>
-      <button onClick={determineWinner} disabled={table.inProgress}>
-        Determine Winner
       </button>
 
       <h2>Flop</h2>
