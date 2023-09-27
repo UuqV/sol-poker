@@ -25,6 +25,12 @@ export const placeBet = () => {
   socket.send(JSON.stringify({action: "BET"}));
 }
 
+export const fold = () => {
+  store.dispatch(takeTurn());
+  socket.send(JSON.stringify({action: "FOLD"}));
+}
+
+
 export const determineWinner = () => {
   const winner = fetchWinner();
   store.dispatch(rewardWinner({winner}));

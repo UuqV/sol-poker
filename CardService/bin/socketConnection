@@ -39,6 +39,22 @@ const connection = (server) => {
                 clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
             }
 
+            const takeTurn = () => {
+                if (turn < Object.keys(clientsInRound).length - 1) {
+                    turn++;
+                    clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
+                }
+                else if (GameState.commonCards.length < 5) {
+                    turn = 0;
+                    const cards = GameState.commonCards.length == 0 ? GameState.dealCommon(3) : GameState.dealCommon(1);
+                    sendToAll({action: "DEAL", payload: cards});
+                    clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
+                } else {
+                    clientsInRound[GameState.determineWinner()].send(JSON.stringify({action: "WINNER"}));
+                    startRound();
+                }
+            }
+
 
 
             if (action == "CONNECTION") {
@@ -60,20 +76,11 @@ const connection = (server) => {
                 clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
             } else if (action == "BET") {
                 clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: false}));
-                console.log('clientsInRound', Object.keys(clientsInRound));
-                if (turn < Object.keys(clientsInRound).length - 1) {
-                    turn++;
-                    clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
-                }
-                else if (GameState.commonCards.length < 5) {
-                    turn = 0;
-                    const cards = GameState.commonCards.length == 0 ? GameState.dealCommon(3) : GameState.dealCommon(1);
-                    sendToAll({action: "DEAL", payload: cards});
-                    clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: true}));
-                } else {
-                    clientsInRound[GameState.determineWinner()].send(JSON.stringify({action: "WINNER"}));
-                    startRound();
-                }
+                takeTurn();
+            } else if (action == "FOLD") {
+                clientsInRound[Object.keys(clientsInRound)[turn]].send(JSON.stringify({action: "TURN", payload: false}));
+                delete clientsInRound[Object.keys(clientsInRound)[turn]];
+                takeTurn();
             }
             
         });

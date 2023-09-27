@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import {dealCard, placeBet, determineWinner} from '../state/actions';
+import { dealCard, placeBet, determineWinner, fold } from '../state/actions';
 import SolBalance from '../SolBalance';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-const PokerGame = ({opponents, table, player}) => {
-  const {wallet, hand, isTurn} = player;
-  const {cards} = table;
+const PokerGame = ({ opponents, table, player }) => {
+  const { wallet, hand, isTurn } = player;
+  const { cards } = table;
 
   return (
     <div>
+      <button onClick={fold} disabled={!player.isTurn}>
+        Fold
+      </button>
       <button onClick={placeBet} disabled={!player.isTurn}>
         Place Bet
       </button>
