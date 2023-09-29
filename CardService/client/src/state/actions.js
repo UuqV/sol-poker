@@ -1,6 +1,6 @@
-import store, { initialize, takeTurn } from '../state/store';
+import store, { initialize, takeTurn, updatePot } from '../state/store';
 import { getHandCards, getFlop, getCard, fetchWinner } from '../api/serviceRequests';
-import { initializePot, rewardWinner } from '../api/solRequests';
+import { initializePot, rewardWinner, placeBet } from '../api/solRequests';
 import socket from "../socket";
 
 export const init = async (wallet) => {
@@ -20,7 +20,8 @@ export const dealCard = () => {
   return getCard();
 };
 
-export const placeBet = () => {
+export const bet = () => {
+  store.dispatch(updatePot(placeBet()));
   store.dispatch(takeTurn());
   socket.send(JSON.stringify({action: "BET"}));
 }
@@ -31,7 +32,6 @@ export const fold = () => {
 }
 
 
-export const determineWinner = () => {
-  const winner = fetchWinner();
-  store.dispatch(rewardWinner({winner}));
+export const determineWinner = (winner) => {
+  rewardWinner({winner});
 };

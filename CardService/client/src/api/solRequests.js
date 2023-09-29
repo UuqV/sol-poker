@@ -182,7 +182,7 @@ export const rewardWinner = async (wallet, playerBalance) => {
   .claimPot(pot.id, bet.id)
     .accounts({
       pot: pot_address,
-      house: wallet,
+      house: house_address,
     })
     .rpc();
   await confirmTx(txHash, connection);

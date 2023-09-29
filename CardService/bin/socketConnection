@@ -36,7 +36,7 @@ const connection = (server) => {
                 hands.forEach(hand => {
                     connectedClients[hand.player].send(JSON.stringify({ action: "HAND", payload: hand.cards }));
                 });
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
+                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "START", payload: true }));
             }
 
             const takeTurn = () => {
@@ -73,12 +73,6 @@ const connection = (server) => {
             } else if (action == "DEAL") {
                 const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
                 sendToAll({ action: "DEAL", payload: cards });
-            } else if (action == "HAND") {
-                const hands = GameState.dealHands(connectedClients);
-                hands.forEach(hand => {
-                    connectedClients[hand.player].send(JSON.stringify({ action: "HAND", payload: hand.cards }));
-                });
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
             } else if (action == "BET") {
                 connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
                 takeTurn();
@@ -87,7 +81,6 @@ const connection = (server) => {
                 GameState.hands = GameState.hands.filter((hand) => {
                     return hand.player != clientsInRound[turn];
                 });
-                console.log('hands', GameState.hands);
                 clientsInRound.splice(turn, 1);
                 turn--;
                 takeTurn();

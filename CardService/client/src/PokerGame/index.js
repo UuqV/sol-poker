@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { dealCard, placeBet, determineWinner, fold } from '../state/actions';
+import { dealCard, determineWinner, fold, bet } from '../state/actions';
 import SolBalance from '../SolBalance';
 import { connect } from 'react-redux';
 
@@ -12,7 +12,7 @@ const PokerGame = ({ opponents, table, player }) => {
       <button onClick={fold} disabled={!player.isTurn}>
         Fold
       </button>
-      <button onClick={placeBet} disabled={!player.isTurn}>
+      <button onClick={bet} disabled={!player.isTurn}>
         Place Bet
       </button>
 
