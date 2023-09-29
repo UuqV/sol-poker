@@ -36,7 +36,6 @@ const pokerSlice = createSlice({
     },
     startRound: (state, action) => {
       state.player.isTurn = action.payload;
-      initializePot(state.wallet);
     },
     initialize: (state, action) => {
       state.player.hand = action.payload;
