@@ -1,12 +1,13 @@
-import store, { initialize, takeTurn, updatePot } from '../state/store';
+import store, { initialize, takeTurn, updatePot, updateBalance } from '../state/store';
 import { getHandCards, getFlop, getCard, fetchWinner } from '../api/serviceRequests';
-import { initializePot, rewardWinner, placeBet } from '../api/solRequests';
+import { initializePot, rewardWinner, placeBet, getSolBalance } from '../api/solRequests';
 import socket from "../socket";
 
 export const init = async (wallet) => {
   try {
-    //initializePot(wallet);
-    //socket.send(JSON.stringify({action: "HAND"}));
+    getSolBalance(wallet).then((balance) => {
+      store.dispatch(updateBalance(balance));
+    });
   } catch (error) {
     console.error(error);
   }

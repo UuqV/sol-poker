@@ -4,7 +4,7 @@ import SolBalance from '../SolBalance';
 import { connect } from 'react-redux';
 
 const PokerGame = ({ opponents, table, player }) => {
-  const { wallet, hand, isTurn } = player;
+  const { wallet, hand, isTurn, balance } = player;
   const { cards } = table;
 
   return (
@@ -44,7 +44,7 @@ const PokerGame = ({ opponents, table, player }) => {
       </ul>
 
       <h2>Pot: ${table.pot}</h2>
-      <SolBalance userName="Player" wallet={wallet} />
+      <SolBalance userName="Player" balance={balance} />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import store, {connectSocket, addOpponents, initialize, takeTurn, getFlop, clearTable, startRound, win, updatePot} from './state/store';
+import store, {connectSocket, addOpponents, initialize, takeTurn, getFlop, clearTable, startRound, win, updatePot, updateBalance} from './state/store';
 import { rewardWinner } from './api/solRequests';
 
 const socket = new WebSocket("ws://localhost:3001/echo");
@@ -19,9 +19,10 @@ socket.addEventListener('message', (message) => {
         store.dispatch(clearTable());
     } else if (action == "WINNER") {
         alert("WINNER!");
-        rewardWinner(store.getState().player.wallet);
+        rewardWinner(store.getState().player.wallet).then((balance) => {
+            store.dispatch(updateBalance(balance));
+        });
     } else if (action == "POT") {
-        console.log(payload);
         store.dispatch(updatePot(payload));
     }
 });

@@ -53,6 +53,9 @@ const pokerSlice = createSlice({
     updatePot: (state, action) => {
       state.table.pot = action.payload;
     },
+    updateBalance: (state, action) => {
+      state.player.balance = action.payload;
+    },
     clearTable: (state, action) => { 
       state.table.cards = [];
       state.table.pot = 0;
@@ -61,7 +64,7 @@ const pokerSlice = createSlice({
   }
 })
 
-export const { addOpponents, initialize, setWallet, takeTurn, getFlop, clearTable, startRound, updatePot } = pokerSlice.actions
+export const { addOpponents, initialize, setWallet, takeTurn, getFlop, clearTable, startRound, updatePot, updateBalance } = pokerSlice.actions
 
 
 const store = configureStore({

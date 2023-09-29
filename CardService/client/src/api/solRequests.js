@@ -154,7 +154,7 @@ export const placeBet = async (wallet) => {
 
 };
 
-export const rewardWinner = async (wallet, playerBalance) => {
+export const rewardWinner = async (wallet) => {
   const connection = new Connection('https://api.devnet.solana.com');
 
   const program = await getProgram();
@@ -190,5 +190,22 @@ export const rewardWinner = async (wallet, playerBalance) => {
   const balance = await connection.getBalance(pot_address, 'confirmed');
   const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
 
-  return (playerBalance + pot);
+  
+  const playerBalance = await getSolBalance(wallet);
+
+  return playerBalance;
 };
+
+export const getSolBalance = async (wallet) => {
+  const connection = new Connection('https://api.devnet.solana.com');
+  console.log('wallet', wallet);
+
+  try {
+    const publicKey = new PublicKey(wallet);
+    const balance = await connection.getBalance(publicKey, 'confirmed');
+    const solBalance = balance / 10 ** 9; // Convert lamports to SOL
+    return solBalance;
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+}
