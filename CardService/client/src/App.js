@@ -28,9 +28,8 @@ const App = ({wallet}) => {
           );
 
           store.dispatch(setWallet({wallet: response.publicKey.toString()}));
-          console.log('socket', wallet);
           socket.send(JSON.stringify({action: "CONNECTION", wallet: response.publicKey.toString()}));
-          init(wallet);
+          init(response.publicKey.toString());
         }
       } else {
         alert('Solana object not found! Get a Phantom Wallet 👻');
@@ -48,6 +47,7 @@ const App = ({wallet}) => {
       console.log('Connected with Public Key:', response.publicKey.toString());
       store.dispatch(setWallet({wallet: response.publicKey.toString()}));
       socket.send(JSON.stringify({action: "CONNECTION", wallet: response.publicKey.toString()}));
+      init(response.publicKey.toString());
     }
   };
 

@@ -1,12 +1,13 @@
-import store, { initialize, takeTurn } from '../state/store';
+import store, { initialize, takeTurn, updatePot, updateBalance } from '../state/store';
 import { getHandCards, getFlop, getCard, fetchWinner } from '../api/serviceRequests';
-import { initializePot, rewardWinner } from '../api/solRequests';
+import { initializePot, rewardWinner, placeBet, getSolBalance } from '../api/solRequests';
 import socket from "../socket";
 
 export const init = async (wallet) => {
   try {
-    //initializePot(wallet);
-    //socket.send(JSON.stringify({action: "HAND"}));
+    getSolBalance(wallet).then((balance) => {
+      store.dispatch(updateBalance(balance));
+    });
   } catch (error) {
     console.error(error);
   }
@@ -20,9 +21,15 @@ export const dealCard = () => {
   return getCard();
 };
 
-export const placeBet = () => {
+export const bet = (wallet) => {
   store.dispatch(takeTurn());
-  socket.send(JSON.stringify({action: "BET"}));
+  placeBet(wallet).then((potBalance) => {
+    store.dispatch(updatePot(potBalance));
+    getSolBalance(wallet).then((balance) => {
+      store.dispatch(updateBalance(balance));
+    });
+    socket.send(JSON.stringify({action: "BET", pot: potBalance}));
+  })
 }
 
 export const fold = () => {
@@ -31,7 +38,6 @@ export const fold = () => {
 }
 
 
-export const determineWinner = () => {
-  const winner = fetchWinner();
-  store.dispatch(rewardWinner({winner}));
+export const determineWinner = (winner) => {
+  rewardWinner({winner});
 };

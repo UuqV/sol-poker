@@ -21,7 +21,7 @@ const connection = (server) => {
                     });
 
             }
-            const { action, wallet } = JSON.parse(message);
+            const { action, wallet, pot } = JSON.parse(message);
             console.log('Received WS Event', action);
 
             const startRound = () => {
@@ -31,12 +31,7 @@ const connection = (server) => {
                 // Creates a copy instead of a reference
                 clientsInRound = Object.keys(connectedClients);
                 console.log('clientsInRound', clientsInRound);
-                GameState.initializeDeck();
-                const hands = GameState.dealHands(clientsInRound);
-                hands.forEach(hand => {
-                    connectedClients[hand.player].send(JSON.stringify({ action: "HAND", payload: hand.cards }));
-                });
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
+                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "START", payload: true }));
             }
 
             const takeTurn = () => {
@@ -74,20 +69,20 @@ const connection = (server) => {
                 const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
                 sendToAll({ action: "DEAL", payload: cards });
             } else if (action == "HAND") {
-                const hands = GameState.dealHands(connectedClients);
+                GameState.initializeDeck();
+                const hands = GameState.dealHands(clientsInRound);
                 hands.forEach(hand => {
                     connectedClients[hand.player].send(JSON.stringify({ action: "HAND", payload: hand.cards }));
                 });
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
-            } else if (action == "BET") {
+            }else if (action == "BET") {
                 connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
+                sendToAll({action: "POT", payload: pot})
                 takeTurn();
             } else if (action == "FOLD") {
                 connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
                 GameState.hands = GameState.hands.filter((hand) => {
                     return hand.player != clientsInRound[turn];
                 });
-                console.log('hands', GameState.hands);
                 clientsInRound.splice(turn, 1);
                 turn--;
                 takeTurn();

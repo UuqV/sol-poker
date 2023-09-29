@@ -1,5 +1,6 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit'
 import { dealFlop, placeBet, dealCard, determineWinner } from './actions';
+import { initializePot } from '../api/solRequests';
 
 const pokerSlice = createSlice({
   name: 'poker',
@@ -33,6 +34,9 @@ const pokerSlice = createSlice({
     takeTurn: (state, action) => {
       state.player.isTurn = action.payload;
     },
+    startRound: (state, action) => {
+      state.player.isTurn = action.payload;
+    },
     initialize: (state, action) => {
       state.player.hand = action.payload;
       state.table.inProgress = true;
@@ -45,23 +49,21 @@ const pokerSlice = createSlice({
     getRiver: (state, action) => {
       state.cards.append(dealCard());
     },
-    placeBet: (state, action) => {
-      state.pot = placeBet(state.wallet);
+    updatePot: (state, action) => {
+      state.table.pot = action.payload;
+    },
+    updateBalance: (state, action) => {
+      state.player.balance = action.payload;
     },
     clearTable: (state, action) => { 
       state.table.cards = [];
+      state.table.pot = 0;
       state.player.hand = [];
     },
-    determineWinner: (state, action) => {
-      const {winner} = action.payload;
-      state.table.pot = 0;
-      state.table.inProgress = false;
-      state.player.balance = determineWinner(winner, state.player.balance);
-    }
   }
 })
 
-export const { addOpponents, initialize, setWallet, takeTurn, getFlop, clearTable } = pokerSlice.actions
+export const { addOpponents, initialize, setWallet, takeTurn, getFlop, clearTable, startRound, updatePot, updateBalance } = pokerSlice.actions
 
 
 const store = configureStore({
