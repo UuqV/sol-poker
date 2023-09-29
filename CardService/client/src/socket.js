@@ -21,7 +21,6 @@ socket.addEventListener('message', (message) => {
     } else if (action == "CLEAR") {
         store.dispatch(clearTable());
     } else if (action == "WINNER") {
-        alert("WINNER!");
         rewardWinner(store.getState().player.wallet).then((balance) => {
             store.dispatch(updateBalance(balance));
         });
