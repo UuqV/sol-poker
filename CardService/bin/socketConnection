@@ -1,42 +1,98 @@
 var WebSocket = require('ws');
 const { GameState } = require('../GameState');
 
+
 const connection = (server) => {
     const ws = new WebSocket.Server({ server });
-    const connectedClients = new Set([]);
-    const roundStarted = false;
+    let connectedClients = [];
+    let clientsInRound = [];
+    let roundStarted = false;
+    let turn = 0;
 
     ws.on('connection', (webSocketClient) => {
         //when a message is received
         webSocketClient.on('message', (message) => {
-
             const sendToAll = (message) => {
                 ws
-                .clients
-                .forEach( client => {
-                    //send the client the current message
-                    client.send(JSON.stringify(message));
-                });
-                
-            }
-            console.log('message', JSON.parse(message));
-            const {action, wallet} = JSON.parse(message);
+                    .clients
+                    .forEach(client => {
+                        //send the client the current message
+                        client.send(JSON.stringify(message));
+                    });
 
-            
-            console.log('action', action);
+            }
+            const { action, wallet } = JSON.parse(message);
+            console.log('Received WS Event', action);
+
+            const startRound = () => {
+                sendToAll({ action: "CLEAR" });
+                roundStarted = true;
+                turn = 0;
+                // Creates a copy instead of a reference
+                clientsInRound = Object.keys(connectedClients);
+                console.log('clientsInRound', clientsInRound);
+                GameState.initializeDeck();
+                const hands = GameState.dealHands(clientsInRound);
+                hands.forEach(hand => {
+                    connectedClients[hand.player].send(JSON.stringify({ action: "HAND", payload: hand.cards }));
+                });
+                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
+            }
+
+            const takeTurn = () => {
+                console.log(clientsInRound);
+                if (clientsInRound.length == 1) {
+                    console.log(clientsInRound[0]);
+                    connectedClients[clientsInRound[0]].send(JSON.stringify({ action: "WINNER" }));
+                    startRound();
+                } else if (turn < clientsInRound.length - 1) {
+                    turn++;
+                    connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
+                }
+                else if (GameState.commonCards.length < 5) {
+                    turn = 0;
+                    const cards = GameState.commonCards.length == 0 ? GameState.dealCommon(3) : GameState.dealCommon(1);
+                    sendToAll({ action: "DEAL", payload: cards });
+                    connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
+                } else {
+                    connectedClients[GameState.determineWinner()].send(JSON.stringify({ action: "WINNER" }));
+                    startRound();
+                }
+            }
+
+
 
             if (action == "CONNECTION") {
-                connectedClients.add(`${wallet}`);
+                connectedClients[wallet] = webSocketClient;
+                console.log('connectedClients', connectedClients.length);
+                if (Object.keys(connectedClients).length > 1 && roundStarted == false) {
+                    startRound();
+                }
                 // The spread operator here makes the set into an array for serialization
-                sendToAll({action: "CONNECTION", payload: [...connectedClients]});
+                sendToAll({ action: "CONNECTION", payload: Object.keys(connectedClients) });
             } else if (action == "DEAL") {
                 const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
-                sendToAll({action: "DEAL", payload: cards});
+                sendToAll({ action: "DEAL", payload: cards });
             } else if (action == "HAND") {
-                const hand = GameState.dealHand();
-                sendToAll({action: "HAND", payload: hand});
+                const hands = GameState.dealHands(connectedClients);
+                hands.forEach(hand => {
+                    connectedClients[hand.player].send(JSON.stringify({ action: "HAND", payload: hand.cards }));
+                });
+                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
+            } else if (action == "BET") {
+                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
+                takeTurn();
+            } else if (action == "FOLD") {
+                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
+                GameState.hands = GameState.hands.filter((hand) => {
+                    return hand.player != clientsInRound[turn];
+                });
+                console.log('hands', GameState.hands);
+                clientsInRound.splice(turn, 1);
+                turn--;
+                takeTurn();
             }
-            
+
         });
 
     });

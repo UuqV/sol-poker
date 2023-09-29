@@ -1,5 +1,8 @@
 const TexasHoldem = require('poker-odds-calc').TexasHoldem;
 
+const joinCards = (cards) => {
+  return cards.map((card) => card.pokerRank + card.pokerSuit[0]);
+}
 class State {
   constructor() {
     this.initializeDeck();
@@ -33,7 +36,7 @@ class State {
       [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
     }
     
-    this.hands = [];
+    this.hands = {};
     this.commonCards = [];
     this.deck = newDeck;
 
@@ -45,12 +48,12 @@ class State {
 
     this.hands.forEach((hand) => {
       console.log('each hand', hand);
-      card0 = hand.cards[0].pokerRank + hand.cards[0].pokerSuit[0];
-      card1 = hand.cards[1].pokerRank + hand.cards[1].pokerSuit[0];
+      const card0 = hand.cards[0].pokerRank + hand.cards[0].pokerSuit[0];
+      const card1 = hand.cards[1].pokerRank + hand.cards[1].pokerSuit[0];
       Table.addPlayer([card0, card1]);
     });
 
-    flop = joinCards(this.commonCards);
+    const flop = joinCards(this.commonCards);
     console.log('flop', flop);
 
     Table
@@ -91,7 +94,7 @@ class State {
       
     this.commonCards.push(cards);
     this.commonCards = this.commonCards.flat();
-    return this.commonCards;
+    return cards;
   };
 
   deal = (numCards) => {
@@ -103,17 +106,17 @@ class State {
     return this.deck.splice(0, numCards);
   }
 
-  dealHand = (player) => {
-    const cards = this.deal(2);
-    const cardsShort = cards.map((card) => card.card).join('');
-    const hand = {
-      'player': player,
-      'cards': cards,
-      'cardsShort': cardsShort
-      };
-    this.hands.push(hand);
-    console.log('hands', this.hands);
-    return hand;
+  dealHands = (wallets) => {
+    this.hands = wallets.map((wallet) => {
+      const cards = this.deal(2);
+      const cardsShort = cards.map((card) => card.card).join('');
+      return {
+        'player': wallet,
+        'cards': cards,
+        'cardsShort': cardsShort
+        };
+    });
+    return this.hands;
   }
 
 }

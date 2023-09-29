@@ -11,6 +11,7 @@ const pokerSlice = createSlice({
       hand: [],
       wallet: undefined,
       balance: 0,
+      isTurn: false,
     },
     table: {
       pot: 0,
@@ -29,13 +30,16 @@ const pokerSlice = createSlice({
         const { opponents } = action.payload;
         state.opponents = opponents;
     },
+    takeTurn: (state, action) => {
+      state.player.isTurn = action.payload;
+    },
     initialize: (state, action) => {
-      console.log('payload', action.payload);
-      state.player.hand = action.payload.cards;
+      state.player.hand = action.payload;
       state.table.inProgress = true;
     },
     getFlop: (state, action) => {
-      state.cards = [ ...state.cards, dealFlop() ];
+      state.table.cards.push(action.payload);
+      state.table.cards = state.table.cards.flat();
       state.preFlop = false;
     },
     getRiver: (state, action) => {
@@ -43,6 +47,10 @@ const pokerSlice = createSlice({
     },
     placeBet: (state, action) => {
       state.pot = placeBet(state.wallet);
+    },
+    clearTable: (state, action) => { 
+      state.table.cards = [];
+      state.player.hand = [];
     },
     determineWinner: (state, action) => {
       const {winner} = action.payload;
@@ -53,7 +61,7 @@ const pokerSlice = createSlice({
   }
 })
 
-export const { addOpponents, initialize, setWallet } = pokerSlice.actions
+export const { addOpponents, initialize, setWallet, takeTurn, getFlop, clearTable } = pokerSlice.actions
 
 
 const store = configureStore({
