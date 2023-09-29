@@ -11,7 +11,7 @@ console.log(GameState);
 router.use(cors());
 
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.sendFile('index.html', { root: '.' });
 });
 
 /* GET cards. */
