@@ -21,9 +21,11 @@ export const dealCard = () => {
 };
 
 export const bet = () => {
-  store.dispatch(updatePot(placeBet()));
   store.dispatch(takeTurn());
-  socket.send(JSON.stringify({action: "BET"}));
+  placeBet().then((potBalance) => {
+    store.dispatch(updatePot(potBalance));
+    socket.send(JSON.stringify({action: "BET"}));
+  })
 }
 
 export const fold = () => {
