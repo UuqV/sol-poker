@@ -21,10 +21,13 @@ export const dealCard = () => {
   return getCard();
 };
 
-export const bet = () => {
+export const bet = (wallet) => {
   store.dispatch(takeTurn());
-  placeBet().then((potBalance) => {
+  placeBet(wallet).then((potBalance) => {
     store.dispatch(updatePot(potBalance));
+    getSolBalance(wallet).then((balance) => {
+      store.dispatch(updateBalance(balance));
+    });
     socket.send(JSON.stringify({action: "BET", pot: potBalance}));
   })
 }

@@ -198,7 +198,6 @@ export const rewardWinner = async (wallet) => {
 
 export const getSolBalance = async (wallet) => {
   const connection = new Connection('https://api.devnet.solana.com');
-  console.log('wallet', wallet);
 
   try {
     const publicKey = new PublicKey(wallet);

@@ -4,8 +4,6 @@ import {connect} from 'react-redux';
 
 
 function SolBalance({ balance }) {
-  console.log('solbalance', balance);
-
   return (
     <div>
       {balance !== null ? (

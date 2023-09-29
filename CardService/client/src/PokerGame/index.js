@@ -12,7 +12,7 @@ const PokerGame = ({ opponents, table, player }) => {
       <button onClick={fold} disabled={!player.isTurn}>
         Fold
       </button>
-      <button onClick={bet} disabled={!player.isTurn}>
+      <button onClick={() => bet(wallet)} disabled={!player.isTurn}>
         Place Bet
       </button>
 
