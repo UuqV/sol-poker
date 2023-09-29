@@ -24,7 +24,7 @@ export const bet = () => {
   store.dispatch(takeTurn());
   placeBet().then((potBalance) => {
     store.dispatch(updatePot(potBalance));
-    socket.send(JSON.stringify({action: "BET"}));
+    socket.send(JSON.stringify({action: "BET", pot: potBalance}));
   })
 }
 

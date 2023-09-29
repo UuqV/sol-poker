@@ -51,10 +51,11 @@ const pokerSlice = createSlice({
       state.cards.append(dealCard());
     },
     updatePot: (state, action) => {
-      state.pot = action.payload;
+      state.table.pot = action.payload;
     },
     clearTable: (state, action) => { 
       state.table.cards = [];
+      state.table.pot = 0;
       state.player.hand = [];
     },
   }

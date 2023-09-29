@@ -21,7 +21,7 @@ const connection = (server) => {
                     });
 
             }
-            const { action, wallet } = JSON.parse(message);
+            const { action, wallet, pot } = JSON.parse(message);
             console.log('Received WS Event', action);
 
             const startRound = () => {
@@ -75,6 +75,7 @@ const connection = (server) => {
                 sendToAll({ action: "DEAL", payload: cards });
             } else if (action == "BET") {
                 connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
+                sendToAll({action: "POT", payload: pot})
                 takeTurn();
             } else if (action == "FOLD") {
                 connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
