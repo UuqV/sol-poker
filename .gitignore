@@ -3,6 +3,8 @@
 
 # dependencies
 */node_modules
+./CardService/node_modules/*
+./CardService/client/node_modules/*
 app/node_modules
 /node_modules
 /.pnp
