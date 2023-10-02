@@ -3,8 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "install": "npm install",
     "start": "node ./bin/www"
+  },
+  "engines": {
+    "node": "16.20.0",
+    "npm": "8.19.4"
   },
   "dependencies": {
     "@project-serum/anchor": "^0.26.0",
