@@ -76,8 +76,7 @@ const App = ({wallet}) => {
     <div className="App">
       <div className="container">
         <div className="header-container">
-          <p className="header">Poker Game</p>
-          <p className="sub-text">Poker Game</p>
+          <p className="header">Queen of Sol</p>
           {/* Render your connect to wallet button right here */}
           {!wallet && renderNotConnectedContainer()}
         </div>
@@ -85,7 +84,7 @@ const App = ({wallet}) => {
         {wallet && <PokerGame />}
         <div className="footer-container">
         </div>
-      </div>
+       </div>
     </div>
   );
 };

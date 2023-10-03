@@ -1,0 +1,30 @@
+.player {
+    padding-bottom: 10px;
+}
+.poker-hand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px; /* Spacing between cards */
+}
+
+.card {
+    width: 60px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 18px;
+    color: black;
+    position: relative;
+}
+
+/* Individual card colors for different suits */
+#card1 { color: black; }  /* Spades */
+#card2 { color: black; }  /* Clubs */
+#card3 { color: red; }    /* Diamonds */
+#card4 { color: red; }    /* Hearts */
+#card5 { color: black; }  /* Spades */

@@ -1,0 +1,18 @@
+import React, { useEffect, useState } from 'react';
+import './OtherPlayers.css';
+
+function OtherPlayer({ opponents}) {
+  return (
+    <div class="otherPlayers">
+        <h2>Other Players</h2>
+            {opponents && opponents.map((address) => (
+                <p key={address}>
+                    {address}
+                </p>
+            ))}
+    </div>
+  );
+}
+
+
+export default OtherPlayer;

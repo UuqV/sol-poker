@@ -29,9 +29,11 @@
 }
 
 .header {
-  margin: 0;
+  color: white;
+  margin: 15px;
   font-size: 50px;
   font-weight: bold;
+  left:0
 }
 
 .sub-text {
@@ -82,10 +84,6 @@
   /* padding-bottom: 45px; */
 }
 
-.twitter-logo {
-  width: 35px;
-  height: 35px;
-}
 
 .footer-text {
   font-size: 16px;

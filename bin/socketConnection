@@ -43,13 +43,13 @@ const connection = (server) => {
                 } else if (turn < clientsInRound.length - 1) {
                     turn++;
                     connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
-                }
+                } // last person, turn reset to 0
                 else if (GameState.commonCards.length < 5) {
                     turn = 0;
                     const cards = GameState.commonCards.length == 0 ? GameState.dealCommon(3) : GameState.dealCommon(1);
                     sendToAll({ action: "DEAL", payload: cards });
                     connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
-                } else {
+                } else {// GameState.commonCards.length==5
                     connectedClients[GameState.determineWinner()].send(JSON.stringify({ action: "WINNER" }));
                     startRound();
                 }
@@ -83,6 +83,7 @@ const connection = (server) => {
                 GameState.hands = GameState.hands.filter((hand) => {
                     return hand.player != clientsInRound[turn];
                 });
+                // remvome the player from the round
                 clientsInRound.splice(turn, 1);
                 turn--;
                 takeTurn();
