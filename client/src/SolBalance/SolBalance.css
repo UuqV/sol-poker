@@ -1,0 +1,8 @@
+.player-balance p {
+    margin: 0;
+    font-size: 16px;
+}
+
+.balance-amount {
+    font-weight: bold;
+}

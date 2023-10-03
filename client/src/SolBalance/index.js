@@ -4,12 +4,13 @@ import {connect} from 'react-redux';
 
 
 function SolBalance({ balance }) {
+  let roundedBalance = parseFloat(balance.toFixed(2));
   return (
-    <div>
+    <div class="player-balance">
       {balance !== null ? (
-        <h2>Balance: {balance} SOL</h2>
+        <p>Your Balance: {roundedBalance} SOL</p>
       ) : (
-        <h2>Loading balance...</h2>
+        <p>Loading balance...</p>
       )}
     </div>
   );
