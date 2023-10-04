@@ -23,8 +23,7 @@
 }
 
 /* Individual card colors for different suits */
-#card1 { color: black; }  /* Spades */
-#card2 { color: black; }  /* Clubs */
-#card3 { color: red; }    /* Diamonds */
-#card4 { color: red; }    /* Hearts */
-#card5 { color: black; }  /* Spades */
+.s { color: black; }  /* Spades */
+.c { color: black; }  /* Clubs */
+.d { color: darkred; }    /* Diamonds */
+.h { color: darkred; }    /* Hearts */
