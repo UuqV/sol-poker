@@ -12,12 +12,12 @@ const PokerGame = ({ opponents, table, player }) => {
   const { cards } = table;
 
   return (
-    <div class="poker-game">
+    <div className="poker-game">
       <Table cards={cards} potBalance={table.pot}/>
       <OtherPlayer opponents={opponents} />
       <Player hand={hand} />
-      <div class="player-bottom-bar">
-        <div class="buttons-container">
+      <div className="player-bottom-bar">
+        <div className="buttons-container">
           <button className="action-button fold-button" onClick={fold} disabled={!player.isTurn}>
             Fold
           </button>

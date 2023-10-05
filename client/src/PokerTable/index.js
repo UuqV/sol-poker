@@ -4,10 +4,10 @@ import './PokerTable.css';
 function Table({ cards, potBalance}) {
   let roundedPotBalance = parseFloat(potBalance.toFixed(2));
   return (
-    <div class="poker-table">
-      <div class="pot">
+    <div className="poker-table">
+      <div className="pot">
           {cards.map((card, index) => (
-              <div class="card">
+              <div className="card">
                   {card.suit}{card.rank}
               </div>
               ))}   
