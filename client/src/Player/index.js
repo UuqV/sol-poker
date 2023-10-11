@@ -3,11 +3,11 @@ import './Player.css';
 
 function Player({ hand }) {
   return (
-    <div class="player">
+    <div className="player">
         <h2>Your Hand</h2>
-        <div class="poker-hand">
+        <div className="poker-hand">
         {hand && hand.map((card, index) => (
-            <div class="card">{card.suit}{card.rank}</div>
+            <div className="card">{card.suit}{card.rank}</div>
             ))}
         </div>
     </div>

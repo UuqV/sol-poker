@@ -1,23 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { dealCard, determineWinner, fold, bet } from '../state/actions';
+import { fold, bet } from '../state/actions';
+// import WinnerAnnounc  ement from '../WinnerAnnouncement';
+
 import SolBalance from '../SolBalance';
-import Table from '../PokerTable';
+import PokerTable from '../PokerTable';
 import OtherPlayer from '../OtherPlayers';
 import Player from '../Player';
 import './PokerGame.css';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
+import store, { setWinner } from '../state/store';
 
 const PokerGame = ({ opponents, table, player }) => {
   const { wallet, hand, isTurn, balance } = player;
   const { cards } = table;
+  const [showModal, setShowModal] = useState(false);
+  const handleCloseModal = () => {
+    console.log('handleCloseModal');
+    store.dispatch(setWinner(null));
+    console.log('winner state',store.getState().winner);
+    setShowModal(false);
+  };
+
+  useEffect(() => {
+      if (store.getState().winner) {
+          setShowModal(true);
+      }
+  }, [store.getState().winner]); // This effect will run every time `winner` changes
 
   return (
-    <div class="poker-game">
-      <Table cards={cards} potBalance={table.pot}/>
+    <div className="poker-game">
+      <PokerTable cards={cards} potBalance={table.pot}/>
       <OtherPlayer opponents={opponents} />
       <Player hand={hand} />
-      <div class="player-bottom-bar">
-        <div class="buttons-container">
+      <div className="player-bottom-bar">
+        <div className="buttons-container">
           <button className="action-button fold-button" onClick={fold} disabled={!player.isTurn}>
             Fold
           </button>
@@ -28,7 +44,14 @@ const PokerGame = ({ opponents, table, player }) => {
         </div>
         <SolBalance userName="Player" balance={balance} />
       </div>
-      
+      {showModal && 
+      <div className="modal-overlay">
+          <div className="modal-content">
+              <p>{store.getState().winner}</p>
+              <p>has won the poker game!</p>
+              <button onClick={handleCloseModal}>Close</button>
+          </div>
+      </div>}
     </div>
   );
 };

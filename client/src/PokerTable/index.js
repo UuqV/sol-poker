@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './PokerTable.css';
 
-function Table({ cards, potBalance}) {
+function PokerTable({ cards, potBalance}) {
   let roundedPotBalance = parseFloat(potBalance.toFixed(2));
   return (
-    <div class="poker-table">
-      <div class="pot">
-          {cards.map((card, index) => (
-              <div class="card">
+    <div className="poker-table">
+      <div className="pot">
+          {cards.map(card => (
+              <div className="card">
                   {card.suit}{card.rank}
               </div>
               ))}   
@@ -18,4 +18,4 @@ function Table({ cards, potBalance}) {
 }
 
 
-export default Table;
+export default PokerTable;

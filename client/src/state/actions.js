@@ -38,6 +38,6 @@ export const fold = () => {
 }
 
 
-export const determineWinner = (winner) => {
-  rewardWinner({winner});
+export const getWinner = () => {
+  return fetchWinner();
 };

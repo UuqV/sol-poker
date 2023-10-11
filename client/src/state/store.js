@@ -1,6 +1,6 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit'
-import { dealFlop, placeBet, dealCard, determineWinner } from './actions';
-import { initializePot } from '../api/solRequests';
+import { dealCard } from './actions';
+
 
 const pokerSlice = createSlice({
   name: 'poker',
@@ -19,7 +19,8 @@ const pokerSlice = createSlice({
       inProgress: false,
       preFlop: true,
       cards: [],
-    }
+    },
+    winner: null,  // Will store the winner wallet address
 
   },
   reducers: {
@@ -60,10 +61,13 @@ const pokerSlice = createSlice({
       state.table.pot = 0;
       state.player.hand = [];
     },
+    setWinner(state, action) {
+        state.winner = action.payload;
+    },
   }
 })
 
-export const { addOpponents, initialize, setWallet, takeTurn, getFlop, clearTable, startRound, updatePot, updateBalance } = pokerSlice.actions
+export const { addOpponents, initialize, setWallet, takeTurn, getFlop, clearTable, startRound, updatePot, updateBalance,setWinner } = pokerSlice.actions
 
 
 const store = configureStore({
