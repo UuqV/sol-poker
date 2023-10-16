@@ -8,6 +8,7 @@ const connection = (server) => {
     let clientsInRound = [];
     let roundStarted = false;
     let turn = 0;
+    let turnStartOffset = 0;
     let turnTimeout;
 
     const sendToAll = (message) => {
@@ -20,22 +21,25 @@ const connection = (server) => {
 
     }
 
+    const getPlayerTurn = () => {
+        return clientsInRound[turn];
+    }
+
     const startTurn = () => {
-        connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
+        connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "TURN", payload: true }));
         turnTimeout = setTimeout(() => {
-            connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
-            connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "CLEAR" }));
-            connectedClients[clientsInRound[turn]].close();
+            connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "TURN", payload: false }));
+            connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "CLEAR" }));
+            connectedClients[getPlayerTurn()].close();
         }, 60000);
     }
 
     const endTurn = () => {
         if (turnTimeout) clearTimeout(turnTimeout);
-        connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
+        connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "TURN", payload: false }));
     }
 
     const takeTurn = () => {
-        console.log(clientsInRound);
         if (clientsInRound.length == 1) {
             connectedClients[clientsInRound[0]].send(JSON.stringify({ action: "WINNER" }));
             roundStarted = false;
@@ -62,7 +66,7 @@ const connection = (server) => {
             turn = 0;
             // Creates a copy instead of a reference
             clientsInRound = Object.keys(connectedClients);
-            connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "START", payload: true }));
+            connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "START", payload: true }));
         }
     }
 
@@ -96,7 +100,7 @@ const connection = (server) => {
             } else if (action == "FOLD") {
                 endTurn();
                 GameState.hands = GameState.hands.filter((hand) => {
-                    return hand.player != clientsInRound[turn];
+                    return hand.player != getPlayerTurn();
                 });
                 // remvome the player from the round
                 clientsInRound.splice(turn, 1);
