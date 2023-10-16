@@ -20,6 +20,20 @@ const connection = (server) => {
 
     }
 
+    const startTurn = () => {
+        connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
+        turnTimeout = setTimeout(() => {
+            connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
+            connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "CLEAR" }));
+            connectedClients[clientsInRound[turn]].close();
+        }, 60000);
+    }
+
+    const endTurn = () => {
+        if (turnTimeout) clearTimeout(turnTimeout);
+        connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
+    }
+
     const takeTurn = () => {
         console.log(clientsInRound);
         if (clientsInRound.length == 1) {
@@ -29,23 +43,13 @@ const connection = (server) => {
             startRound();
         } else if (turn < clientsInRound.length - 1) {
             turn++;
-            connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
-            turnTimeout = setTimeout(() => {
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "CLEAR" }));
-                connectedClients[clientsInRound[turn]].close();
-            }, 60000);
+            startTurn();
         } // last person, turn reset to 0
         else if (GameState.commonCards.length < 5) {
             turn = 0;
             const cards = GameState.commonCards.length == 0 ? GameState.dealCommon(3) : GameState.dealCommon(1);
             sendToAll({ action: "DEAL", payload: cards });
-            connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: true }));
-            turnTimeout = setTimeout(() => {
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "CLEAR" }));
-                connectedClients[clientsInRound[turn]].close();
-            }, 60000);
+            startTurn();
         } else {// GameState.commonCards.length==5
             connectedClients[GameState.determineWinner()].send(JSON.stringify({ action: "WINNER" }));
         }
@@ -86,13 +90,11 @@ const connection = (server) => {
                     connectedClients[hand.player].send(JSON.stringify({ action: "HAND", payload: hand.cards }));
                 });
             }else if (action == "BET") {
-                if (turnTimeout) clearTimeout(turnTimeout);
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
+                endTurn();
                 sendToAll({action: "POT", payload: pot})
                 takeTurn();
             } else if (action == "FOLD") {
-                if (turnTimeout) clearTimeout(turnTimeout);
-                connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
+                endTurn();
                 GameState.hands = GameState.hands.filter((hand) => {
                     return hand.player != clientsInRound[turn];
                 });
