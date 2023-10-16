@@ -8,7 +8,7 @@ const connection = (server) => {
     let clientsInRound = [];
     let roundStarted = false;
     let turn = 0;
-    let turnStartOffset = 0;
+    let offsetTurn = 0;
     let turnTimeout;
 
     const sendToAll = (message) => {
@@ -21,8 +21,12 @@ const connection = (server) => {
 
     }
 
+    const getTurnIndex = () => {
+        return Math.abs((turn + offsetTurn) % clientsInRound.length);
+    }
+
     const getPlayerTurn = () => {
-        return clientsInRound[turn];
+        return clientsInRound[getTurnIndex()];
     }
 
     const startTurn = () => {
@@ -40,8 +44,10 @@ const connection = (server) => {
     }
 
     const takeTurn = () => {
+        console.log('turnIndex', getTurnIndex());
         if (clientsInRound.length == 1) {
             connectedClients[clientsInRound[0]].send(JSON.stringify({ action: "WINNER" }));
+            offsetTurn++;
             roundStarted = false;
             sendToAll({ action: "CLEAR" });
             startRound();
@@ -55,7 +61,11 @@ const connection = (server) => {
             sendToAll({ action: "DEAL", payload: cards });
             startTurn();
         } else {// GameState.commonCards.length==5
+            offsetTurn++;
             connectedClients[GameState.determineWinner()].send(JSON.stringify({ action: "WINNER" }));
+            console.log('computed', (turn + offsetTurn) % clientsInRound.length);
+            roundStarted = false;
+            startRound();
         }
     }
 
@@ -103,8 +113,7 @@ const connection = (server) => {
                     return hand.player != getPlayerTurn();
                 });
                 // remvome the player from the round
-                clientsInRound.splice(turn, 1);
-                turn--;
+                clientsInRound.splice(getTurnIndex(), 1);
                 takeTurn();
             }
 
@@ -125,7 +134,7 @@ const connection = (server) => {
                 });
                 // remvome the player from the round
                 clientsInRound.splice(closedInRound, 1);
-                if (closedInRound == turn) {
+                if (closedInRound == getPlayerTurn()) {
                     if (turnTimeout) clearTimeout(turnTimeout);
                     turn--;
                     takeTurn();
