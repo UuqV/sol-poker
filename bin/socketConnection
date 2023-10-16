@@ -34,7 +34,7 @@ const connection = (server) => {
                 connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
                 connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "CLEAR" }));
                 connectedClients[clientsInRound[turn]].close();
-            }, 12000);
+            }, 60000);
         } // last person, turn reset to 0
         else if (GameState.commonCards.length < 5) {
             turn = 0;
@@ -45,7 +45,7 @@ const connection = (server) => {
                 connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "TURN", payload: false }));
                 connectedClients[clientsInRound[turn]].send(JSON.stringify({ action: "CLEAR" }));
                 connectedClients[clientsInRound[turn]].close();
-            }, 12000);
+            }, 60000);
         } else {// GameState.commonCards.length==5
             connectedClients[GameState.determineWinner()].send(JSON.stringify({ action: "WINNER" }));
         }
