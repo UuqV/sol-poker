@@ -30,6 +30,10 @@ export const bet = (wallet) => {
     });
     socket.send(JSON.stringify({action: "BET", pot: potBalance}));
   })
+  .catch((error) => {
+      console.error("Error occurred:", error);
+      // Handle the error
+  });
 }
 
 export const fold = () => {
