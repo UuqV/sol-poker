@@ -13,6 +13,10 @@ socket.addEventListener('message', (message) => {
         initializePot(store.getState().player.wallet).then(() => {
             socket.send(JSON.stringify({action: "HAND"}));
             store.dispatch(startRound(payload));
+        })
+        .catch((error) => {
+            console.error("Error occurred:", error);
+            // Handle the error
         });
     } else if (action == "HAND") {
         store.dispatch(initialize(payload));
@@ -23,6 +27,10 @@ socket.addEventListener('message', (message) => {
     } else if (action == "WINNER") {
         rewardWinner(store.getState().player.wallet).then((balance) => {
             store.dispatch(updateBalance(balance));
+        })
+        .catch((error) => {
+            console.error("Error occurred:", error);
+            // Handle the error
         });
     } else if (action == "POT") {
         store.dispatch(updatePot(payload));
