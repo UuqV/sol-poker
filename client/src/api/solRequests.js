@@ -55,16 +55,20 @@ const getHouseAddress = async () => {
 };
 
 const getBetAddress = async (pot_address, id) => {
-  return (
-    await PublicKey.findProgramAddressSync(
-      [
-        Buffer.from('bet'),
-        pot_address.toBuffer(),
-        new BN(id).toArrayLike(Buffer, "le", 4),
-      ],
-      programID
-    )
-  )[0];
+  const seeds = [
+    Buffer.from('bet'),
+    pot_address.toBuffer(),
+    new BN(id).toArrayLike(Buffer, "le", 4),
+  ];
+  try {
+    const [programAddress, nonce] = PublicKey.findProgramAddressSync(seeds, programID);
+    return programAddress;
+  } catch (error) {
+    console.error("Error deriving program address:", error);
+    // Handle error
+    throw error; 
+  }
+
 }
 
 const confirmTx = async (txHash, connection) => {

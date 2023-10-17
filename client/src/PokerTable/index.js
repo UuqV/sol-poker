@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './PokerTable.css';
 
 function Table({ cards, potBalance}) {
+  console.log("potBalance", potBalance);
   let roundedPotBalance = parseFloat(potBalance.toFixed(2));
   return (
     <div className="poker-table">
