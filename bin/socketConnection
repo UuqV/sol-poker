@@ -44,7 +44,6 @@ const connection = (server) => {
     }
 
     const takeTurn = () => {
-        console.log('turnIndex', getTurnIndex());
         if (clientsInRound.length == 1) {
             connectedClients[clientsInRound[0]].send(JSON.stringify({ action: "WINNER" }));
             offsetTurn++;
@@ -62,7 +61,6 @@ const connection = (server) => {
         } else {// GameState.commonCards.length==5
             offsetTurn++;
             connectedClients[GameState.determineWinner()].send(JSON.stringify({ action: "WINNER" }));
-            console.log('computed', (turn + offsetTurn) % clientsInRound.length);
             roundStarted = false;
             startRound();
         }
@@ -114,7 +112,7 @@ const connection = (server) => {
                 });
                 // remvome the player from the round
                 clientsInRound.splice(getTurnIndex(), 1);
-                if (turn !== 0) turn--;
+                if (turn !== 0) turn--; // Investigate why this line works
                 takeTurn();
             }
 
