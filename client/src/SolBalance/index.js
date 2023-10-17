@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 function SolBalance({ balance }) {
   let roundedBalance = parseFloat(balance.toFixed(2));
   return (
-    <div class="player-balance">
+    <div className="player-balance">
       {balance !== null ? (
         <p>Your Balance: {roundedBalance} SOL</p>
       ) : (

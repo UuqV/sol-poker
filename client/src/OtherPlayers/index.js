@@ -3,7 +3,8 @@ import './OtherPlayers.css';
 
 function OtherPlayer({ opponents}) {
   return (
-    <div class="otherPlayers">
+
+    <div className="otherPlayers">
         <h2>Players</h2>
             {opponents && opponents.map((address) => (
                 <p key={address}>
