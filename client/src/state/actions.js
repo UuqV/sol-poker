@@ -29,7 +29,9 @@ export const bet = (wallet) => {
       store.dispatch(updateBalance(balance));
     });
     socket.send(JSON.stringify({action: "BET", pot: potBalance}));
-  })
+  }).catch(() => {
+    socket.send(JSON.stringify({action: "FOLD"}));
+  });
 }
 
 export const fold = () => {
