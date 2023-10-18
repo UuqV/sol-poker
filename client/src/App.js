@@ -8,7 +8,7 @@ import PokerGame from './PokerGame';
 import {setWallet} from './state/store';
 import { init } from './state/actions';
 import {connect} from 'react-redux';
-import socket from './socket';
+import socket from './clientSocket';
 
 
 const App = ({wallet}) => {

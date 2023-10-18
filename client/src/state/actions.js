@@ -1,7 +1,7 @@
 import store, { initialize, takeTurn, updatePot, updateBalance } from '../state/store';
 import { getHandCards, getFlop, getCard, fetchWinner } from '../api/serviceRequests';
 import { initializePot, rewardWinner, placeBet, getSolBalance } from '../api/solRequests';
-import socket from "../socket";
+import socket from "../clientSocket";
 
 export const init = async (wallet) => {
   try {
