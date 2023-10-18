@@ -1,5 +1,6 @@
 import store, {connectSocket, addOpponents, initialize, takeTurn, getFlop, clearTable, startRound, win, updatePot, updateBalance} from './state/store';
 import { rewardWinner, initializePot } from './api/solRequests';
+import { bet } from './state/actions';
 
 const socket = new WebSocket("ws://localhost:3001/echo");
 socket.addEventListener('message', (message) => {
@@ -10,9 +11,11 @@ socket.addEventListener('message', (message) => {
     } else if (action == "TURN") {
         store.dispatch(takeTurn(payload));
     } else if (action == "START") {
-        initializePot(store.getState().player.wallet).then(() => {
+        const wallet = store.getState().player.wallet;
+        initializePot(wallet).then(() => {
             socket.send(JSON.stringify({action: "HAND"}));
             store.dispatch(startRound(payload));
+            bet(wallet);
         });
     } else if (action == "HAND") {
         store.dispatch(initialize(payload));
