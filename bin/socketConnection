@@ -58,7 +58,7 @@ const connection = (server) => {
                     // GameState.commonCards.length==5
                     winner = GameState.determineWinner();
                     console.log('GameState.commonCards.length==5 winner is ', winner);
-                    //sendToAll({ action: "WINNER", payload: winner }); //i added this
+                    //sendToAll({ action: "ANNOUNCE_WINNER", payload: winner }); //i added this
                     connectedClients[winner].send(JSON.stringify({ action: "WINNER" }));
                     startRound();
                 }
