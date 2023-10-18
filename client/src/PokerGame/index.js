@@ -13,24 +13,12 @@ import store, { setWinner } from '../state/store';
 const PokerGame = ({ opponents, table, player }) => {
   const { wallet, hand, isTurn, balance } = player;
   const { cards } = table;
-  const [showModal, setShowModal] = useState(false);
-  const handleCloseModal = () => {
-    console.log('handleCloseModal');
-    store.dispatch(setWinner(null));
-    console.log('winner state',store.getState().winner);
-    setShowModal(false);
-  };
 
-  useEffect(() => {
-      if (store.getState().winner) {
-          setShowModal(true);
-      }
-  }, [store.getState().winner]); // This effect will run every time `winner` changes
 
   return (
     <div className="poker-game">
       <PokerTable cards={cards} potBalance={table.pot}/>
-      <OtherPlayer opponents={opponents} />
+      <OtherPlayer opponents={opponents}  winner={store.getState().winner }/>
       <Player hand={hand} />
       <div className="player-bottom-bar">
         <div className="buttons-container">
@@ -44,14 +32,6 @@ const PokerGame = ({ opponents, table, player }) => {
         </div>
         <SolBalance userName="Player" balance={balance} />
       </div>
-      {showModal && 
-      <div className="modal-overlay">
-          <div className="modal-content">
-              <p>{store.getState().winner}</p>
-              <p>has won the poker game!</p>
-              <button onClick={handleCloseModal}>Close</button>
-          </div>
-      </div>}
     </div>
   );
 };

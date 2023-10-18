@@ -1,7 +1,7 @@
 import store, { addOpponents, initialize, takeTurn, getFlop, clearTable, startRound, win, updatePot, updateBalance, setWinner} from './state/store';
 import { rewardWinner, initializePot } from './api/solRequests';
 
-const socket = new WebSocket("wss://celestial-sonar-400518.uk.r.appspot.com/echo");
+const socket = new WebSocket("ws://localhost:3001/echo");
 socket.addEventListener('message', (message) => {
     const {action, payload} = JSON.parse(message.data);
     console.log('Received WS Event', action);
@@ -25,9 +25,7 @@ socket.addEventListener('message', (message) => {
         store.dispatch(setWinner(store.getState().player.wallet));
         socket.send(JSON.stringify({action: "ANNOUNCE_WINNER", winner: store.getState().player.wallet}));
         rewardWinner(store.getState().player.wallet).then((balance) => {
-            
             store.dispatch(updateBalance(balance));
-            
         });
         console.log('WINNER------');
         console.log('payload in action == "WINNER"', store.getState().player.wallet);
