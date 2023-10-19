@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fold, bet } from '../state/actions';
-// import WinnerAnnounc  ement from '../WinnerAnnouncement';
+// import WinnerAnnouncement from '../WinnerAnnouncement';
 
 import SolBalance from '../SolBalance';
 import PokerTable from '../PokerTable';
@@ -18,7 +18,7 @@ const PokerGame = ({ opponents, table, player }) => {
   return (
     <div className="poker-game">
       <PokerTable cards={cards} potBalance={table.pot}/>
-      <OtherPlayer opponents={opponents}  winner={store.getState().winner }/>
+      <OtherPlayer opponents={opponents} />
       <Player hand={hand} />
       <div className="player-bottom-bar">
         <div className="buttons-container">

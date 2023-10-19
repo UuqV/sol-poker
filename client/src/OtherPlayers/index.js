@@ -1,27 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import './OtherPlayers.css';
+import store, { setWinner } from '../state/store';
 
-function OtherPlayer({ opponents, winner }) {
+
+function OtherPlayer({ opponents }) {
   const [winnerColor, setWinnerColor] = useState('white');
+  // let [currentWinner, setCurrentWinner] = useState(null);
+  // currentWinner = winner;
 
   useEffect(() => {
-    if (winner) {
+    console.log('----------in OtherPlayer.js useEffect, winner: ', store.getState().winner);
+    if (store.getState().winner) {
       setWinnerColor('green');
-      // After 2 seconds, change the text color back to white
+      // After 5 seconds, change the text color back to white
       const timer = setTimeout(() => {
         setWinnerColor('white');
-        winner = null;
+        //setCurrentWinner(null);
+        store.dispatch(setWinner(null));
+        console.log('-----------in OtherPlayer.js useEffect, winner: after--: ', store.getState().winner);
       }, 5000);
       // Clear the timer when the component unmounts
       return () => clearTimeout(timer);
     }
-  }, [winner]);
+  }, [store.getState().winner]);
 
   return (
     <div className="otherPlayers">
         <h2>Other Players</h2>
             {opponents && opponents.map((address) => (
-                <p style={{ color: address === winner ? winnerColor : 'white' }} key={address}>
+                <p style={{ color: address === store.getState().winner ? winnerColor : 'white' }} key={address}>
                     {address}
                 </p>
             ))}

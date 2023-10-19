@@ -43,6 +43,7 @@ const connection = (server) => {
                 console.log(clientsInRound);
                 if (clientsInRound.length == 1) {
                     console.log(clientsInRound[0]);
+                    sendToAll({ action: "ANNOUNCE_WINNER", payload: clientsInRound[0] });
                     connectedClients[clientsInRound[0]].send(JSON.stringify({ action: "WINNER" }));
                     startRound();
                 } else if (turn < clientsInRound.length - 1) {
@@ -58,7 +59,7 @@ const connection = (server) => {
                     // GameState.commonCards.length==5
                     winner = GameState.determineWinner();
                     console.log('GameState.commonCards.length==5 winner is ', winner);
-                    //sendToAll({ action: "ANNOUNCE_WINNER", payload: winner }); //i added this
+                    sendToAll({ action: "ANNOUNCE_WINNER", payload: winner }); //i added this
                     connectedClients[winner].send(JSON.stringify({ action: "WINNER" }));
                     startRound();
                 }
@@ -96,8 +97,7 @@ const connection = (server) => {
                 takeTurn();
             } else if (action == "ANNOUNCE_WINNER") {
                 console.log('in socketConnection: ANNOUNCE_WINNER------, see if we have winner', winner);
-                //alert(`The winner is ${winner}!`);
-                sendToAll({ action: "ANNOUNCE_WINNER", payload: winner });
+                // sendToAll({ action: "ANNOUNCE_WINNER", payload: winner });
 
             }
 
