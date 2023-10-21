@@ -130,7 +130,6 @@ const connection = (server) => {
 
             let closedInRound = clientsInRound.indexOf(closedSocket);
 
-            delete connectedClients[closedSocket];
 
             if (roundStarted && closedInRound != -1) {
                 GameState.hands = GameState.hands.filter((hand) => {
@@ -144,6 +143,8 @@ const connection = (server) => {
                     takeTurn();
                 }
             }
+            
+            delete connectedClients[closedSocket];
 
             sendToAll({ action: "CONNECTION", payload: Object.keys(connectedClients) });
 
