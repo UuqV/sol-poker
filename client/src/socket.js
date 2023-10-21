@@ -23,18 +23,12 @@ socket.addEventListener('message', (message) => {
         store.dispatch(clearTable());
     } else if (action == "WINNER") {
         store.dispatch(setWinner(store.getState().player.wallet));
-        socket.send(JSON.stringify({action: "ANNOUNCE_WINNER", winner: store.getState().player.wallet}));
         rewardWinner(store.getState().player.wallet).then((balance) => {
             store.dispatch(updateBalance(balance));
         });
-        console.log('WINNER------');
-        console.log('payload in action == "WINNER"', store.getState().player.wallet);
     } else if (action == "POT") {
         store.dispatch(updatePot(payload));
     } else if (action == "ANNOUNCE_WINNER") {
-        // front end part
-        console.log('in socket.js ANNOUNCE_WINNER------');
-        console.log('payload in action == "ANNOUNCE_WINNER"', payload);// works
         // set winner again
         store.dispatch(setWinner(payload));
         console.log('get winner from store.js', store.getState().winner);

@@ -91,14 +91,10 @@ const connection = (server) => {
                 GameState.hands = GameState.hands.filter((hand) => {
                     return hand.player != clientsInRound[turn];
                 });
-                // remvome the player from the round
+                // remove the player from the round
                 clientsInRound.splice(turn, 1);
                 turn--;
                 takeTurn();
-            } else if (action == "ANNOUNCE_WINNER") {
-                console.log('in socketConnection: ANNOUNCE_WINNER------, see if we have winner', winner);
-                // sendToAll({ action: "ANNOUNCE_WINNER", payload: winner });
-
             }
 
         });
