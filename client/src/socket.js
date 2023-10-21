@@ -22,7 +22,7 @@ socket.addEventListener('message', (message) => {
     } else if (action == "CLEAR") {
         store.dispatch(clearTable());
     } else if (action == "WINNER") {
-        store.dispatch(setWinner(store.getState().player.wallet));
+        // store.dispatch(setWinner(store.getState().player.wallet));
         rewardWinner(store.getState().player.wallet).then((balance) => {
             store.dispatch(updateBalance(balance));
         });
