@@ -130,18 +130,21 @@ const connection = (server) => {
 
             let closedInRound = clientsInRound.indexOf(closedSocket);
 
+            console.log('closedInRound', closedInRound);
+
 
             if (roundStarted && closedInRound != -1) {
                 GameState.hands = GameState.hands.filter((hand) => {
                     return hand.player != clientsInRound[closedSocket];
                 });
                 // remvome the player from the round
-                clientsInRound.splice(closedInRound, 1);
+                console.log('getTurnIndex', getTurnIndex())
                 if (closedInRound == getTurnIndex()) {
                     if (turnTimeout) clearTimeout(turnTimeout);
                     if (turn !== 0) turn--;
                     takeTurn();
                 }
+                clientsInRound.splice(closedInRound, 1);
             }
             
             delete connectedClients[closedSocket];
