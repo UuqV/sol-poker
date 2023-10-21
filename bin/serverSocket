@@ -33,8 +33,7 @@ const connection = (server) => {
         connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "TURN", payload: true }));
         turnTimeout = setTimeout(() => {
             connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "TURN", payload: false }));
-            connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "CLEAR" }));
-            connectedClients[getPlayerTurn()].close();
+            fold();
         }, 60000);
     }
 
@@ -64,6 +63,17 @@ const connection = (server) => {
             roundStarted = false;
             startRound();
         }
+    }
+
+    const fold = () => {
+        endTurn();
+        GameState.hands = GameState.hands.filter((hand) => {
+            return hand.player != getPlayerTurn();
+        });
+        // remvome the player from the round
+        clientsInRound.splice(getTurnIndex(), 1);
+        if (turn !== 0) turn--; // Investigate why this line works
+        takeTurn();
     }
 
     const startRound = () => {
@@ -106,14 +116,7 @@ const connection = (server) => {
                 sendToAll({action: "POT", payload: pot})
                 takeTurn();
             } else if (action == "FOLD") {
-                endTurn();
-                GameState.hands = GameState.hands.filter((hand) => {
-                    return hand.player != getPlayerTurn();
-                });
-                // remvome the player from the round
-                clientsInRound.splice(getTurnIndex(), 1);
-                if (turn !== 0) turn--; // Investigate why this line works
-                takeTurn();
+                fold();
             } else if (action == "RESTART") {
                 offsetTurn++;
                 roundStarted = false;
@@ -130,24 +133,27 @@ const connection = (server) => {
 
             let closedInRound = clientsInRound.indexOf(closedSocket);
 
-            console.log('closedInRound', closedInRound);
-
+            delete connectedClients[closedSocket];
 
             if (roundStarted && closedInRound != -1) {
                 GameState.hands = GameState.hands.filter((hand) => {
                     return hand.player != clientsInRound[closedSocket];
                 });
                 // remvome the player from the round
-                console.log('getTurnIndex', getTurnIndex())
-                if (closedInRound == getTurnIndex()) {
-                    if (turnTimeout) clearTimeout(turnTimeout);
-                    if (turn !== 0) turn--;
+                if (closedInRound === getTurnIndex()) {
+                    GameState.hands = GameState.hands.filter((hand) => {
+                        return hand.player != getPlayerTurn();
+                    });
+                    // remvome the player from the round
+                    clientsInRound.splice(getTurnIndex(), 1);
+                    if (turn !== 0) turn--; // Investigate why this line works
                     takeTurn();
                 }
-                clientsInRound.splice(closedInRound, 1);
+                else {
+                    if (turnTimeout) clearTimeout(turnTimeout);
+                    clientsInRound.splice(closedInRound, 1);
+                }
             }
-            
-            delete connectedClients[closedSocket];
 
             sendToAll({ action: "CONNECTION", payload: Object.keys(connectedClients) });
 
