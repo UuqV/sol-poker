@@ -123,7 +123,10 @@ const connection = (server) => {
                 return connectedClients[client]._closeCode == webSocketClient;
             });
 
+            console.log(closedSocket);
+
             let closedInRound = clientsInRound.indexOf(closedSocket);
+            console.log(closedInRound);
 
             if (roundStarted && closedInRound != -1) {
                 GameState.hands = GameState.hands.filter((hand) => {
@@ -131,7 +134,8 @@ const connection = (server) => {
                 });
                 // remvome the player from the round
                 clientsInRound.splice(closedInRound, 1);
-                if (closedInRound == getPlayerTurn()) {
+                console.log('closedInRound', getTurnIndex());
+                if (closedInRound == getTurnIndex()) {
                     if (turnTimeout) clearTimeout(turnTimeout);
                     if (turn !== 0) turn--;
                     takeTurn();
