@@ -16,6 +16,8 @@ socket.addEventListener('message', (message) => {
             socket.send(JSON.stringify({action: "HAND"}));
             store.dispatch(startRound(payload));
             bet(wallet);
+        }).catch(() => {
+            socket.send(JSON.stringify({action: "RESTART"}));
         });
     } else if (action == "HAND") {
         store.dispatch(initialize(payload));

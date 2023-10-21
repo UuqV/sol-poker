@@ -114,6 +114,10 @@ const connection = (server) => {
                 clientsInRound.splice(getTurnIndex(), 1);
                 if (turn !== 0) turn--; // Investigate why this line works
                 takeTurn();
+            } else if (action == "RESTART") {
+                offsetTurn++;
+                roundStarted = false;
+                startRound();
             }
 
         });
