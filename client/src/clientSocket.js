@@ -2,7 +2,7 @@ import store, {connectSocket, addOpponents, initialize, takeTurn, getFlop, clear
 import { rewardWinner, initializePot } from './api/solRequests';
 import { bet } from './state/actions';
 
-const socket = new WebSocket("ws://localhost:3001/echo");
+const socket = new WebSocket("wss://celestial-sonar-400518.uk.r.appspot.com/echo");
 socket.addEventListener('message', (message) => {
     const {action, payload} = JSON.parse(message.data);
     console.log('Received WS Event', action);

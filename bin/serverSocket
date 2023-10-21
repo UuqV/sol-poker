@@ -125,8 +125,6 @@ const connection = (server) => {
 
             let closedInRound = clientsInRound.indexOf(closedSocket);
 
-            delete connectedClients[closedSocket];
-
             if (roundStarted && closedInRound != -1) {
                 GameState.hands = GameState.hands.filter((hand) => {
                     return hand.player != clientsInRound[closedSocket];
@@ -135,10 +133,12 @@ const connection = (server) => {
                 clientsInRound.splice(closedInRound, 1);
                 if (closedInRound == getPlayerTurn()) {
                     if (turnTimeout) clearTimeout(turnTimeout);
-                    turn--;
+                    if (turn !== 0) turn--;
                     takeTurn();
                 }
             }
+
+            delete connectedClients[closedSocket];
             
             sendToAll({ action: "CONNECTION", payload: Object.keys(connectedClients) });
 
