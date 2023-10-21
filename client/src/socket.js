@@ -22,16 +22,13 @@ socket.addEventListener('message', (message) => {
     } else if (action == "CLEAR") {
         store.dispatch(clearTable());
     } else if (action == "WINNER") {
-        // store.dispatch(setWinner(store.getState().player.wallet));
         rewardWinner(store.getState().player.wallet).then((balance) => {
             store.dispatch(updateBalance(balance));
         });
     } else if (action == "POT") {
         store.dispatch(updatePot(payload));
     } else if (action == "ANNOUNCE_WINNER") {
-        // set winner again
         store.dispatch(setWinner(payload));
-        console.log('get winner from store.js', store.getState().winner);
     }
 });
 

@@ -20,7 +20,7 @@ const pokerSlice = createSlice({
       preFlop: true,
       cards: [],
     },
-    winner: null,  // Will store the winner wallet address
+    winner: null,
 
   },
   reducers: {
