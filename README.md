@@ -1,16 +1,7 @@
-# Endpoints
+# To Run
 
-Endpoint to shuffle the deck and reinitialize:
-`http://localhost:3000/shuffle/`
+`npm install` --> `npm start` at port `3001`.
 
-Endpoint to retrieve hand cards:
-`http://localhost:3000/hand/`
+For client development enter the `client` and `npm install` and `npm start`. Client is at port `3000`.
 
-Endpoint to retrieve flop cards:
-`http://localhost:3000/flop/`
-
-Endpoint to retrieve river cards (call this function once each for the 4th and 5th card):
-`http://localhost:3000/river/`
-
-Endpoint to determine winner:
-`http://localhost:3000/winner/`
+To build a new client use `npm run build` in the `client` directory.

@@ -20,8 +20,9 @@ function OtherPlayer({ opponents, winner }) {
   }, [winner]);
 
   return (
+
     <div className="otherPlayers">
-        <h2>Other Players</h2>
+        <h2>Players</h2>
             {opponents && opponents.map((address) => (
                 <p style={{ color: address === winner ? winnerColor : 'white' }} key={address}>
                     {address}

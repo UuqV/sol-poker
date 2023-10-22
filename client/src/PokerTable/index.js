@@ -6,11 +6,14 @@ function PokerTable({ cards, potBalance }) {
   return (
     <div className="poker-table">
       <div className="pot">
-          {cards.map(card => (
-              <div className="card">
-                  {card.suit}{card.rank}
+          {cards.map((card, index) => {
+            console.log(card);
+            return (
+              <div class={"card " + card.pokerSuit}>
+                  {card.rank}{card.suit}
               </div>
-              ))}   
+              )
+            })}   
       </div>
       <h2>Pot: ${roundedPotBalance} SOL</h2>
     </div>

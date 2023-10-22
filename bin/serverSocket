@@ -1,0 +1,164 @@
+var WebSocket = require('ws');
+const { GameState } = require('../GameState');
+
+
+const connection = (server) => {
+    const ws = new WebSocket.Server({ server });
+    let connectedClients = {};
+    let clientsInRound = [];
+    let roundStarted = false;
+    let turn = 0;
+    let offsetTurn = 0;
+    let turnTimeout;
+
+    const sendToAll = (message) => {
+        ws
+            .clients
+            .forEach(client => {
+                //send the client the current message
+                client.send(JSON.stringify(message));
+            });
+
+    }
+
+    const getTurnIndex = () => {
+        return Math.abs((turn + offsetTurn) % clientsInRound.length);
+    }
+
+    const getPlayerTurn = () => {
+        return clientsInRound[getTurnIndex()];
+    }
+
+    const startTurn = () => {
+        connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "TURN", payload: true }));
+        turnTimeout = setTimeout(() => {
+            connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "TURN", payload: false }));
+            fold();
+        }, 60000);
+    }
+
+    const endTurn = () => {
+        if (turnTimeout) clearTimeout(turnTimeout);
+        connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "TURN", payload: false }));
+    }
+
+    const takeTurn = () => {
+        if (clientsInRound.length == 1) {
+            connectedClients[clientsInRound[0]].send(JSON.stringify({ action: "WINNER" }));
+            offsetTurn++;
+            roundStarted = false;
+            sendToAll({ action: "CLEAR" });
+            startRound();
+        } else if (turn < clientsInRound.length) {
+            startTurn();
+        } // last person, turn reset to 0
+        else if (GameState.commonCards.length < 5) {
+            turn = 0;
+            const cards = GameState.commonCards.length == 0 ? GameState.dealCommon(3) : GameState.dealCommon(1);
+            sendToAll({ action: "DEAL", payload: cards });
+            startTurn();
+        } else {// GameState.commonCards.length==5
+            offsetTurn++;
+            connectedClients[GameState.determineWinner()].send(JSON.stringify({ action: "WINNER" }));
+            roundStarted = false;
+            startRound();
+        }
+    }
+
+    const fold = () => {
+        endTurn();
+        GameState.hands = GameState.hands.filter((hand) => {
+            return hand.player != getPlayerTurn();
+        });
+        // remvome the player from the round
+        clientsInRound.splice(getTurnIndex(), 1);
+        if (turn !== 0) turn--; // Investigate why this line works
+        takeTurn();
+    }
+
+    const startRound = () => {
+        if (Object.keys(connectedClients).length > 1 && roundStarted == false) {
+            sendToAll({ action: "CLEAR" });
+            roundStarted = true;
+            turn = 0;
+            // Creates a copy instead of a reference
+            clientsInRound = Object.keys(connectedClients);
+            connectedClients[getPlayerTurn()].send(JSON.stringify({ action: "START", payload: true }));
+        }
+    }
+
+
+    ws.on('connection', (webSocketClient) => {
+        //when a message is received
+        webSocketClient.on('message', (message) => {
+
+            const { action, wallet, pot } = JSON.parse(message);
+            console.log('Received WS Event', action);
+
+
+            if (action == "CONNECTION") {
+                connectedClients[wallet] = webSocketClient;
+                startRound();
+                // The spread operator here makes the set into an array for serialization
+                sendToAll({ action: "CONNECTION", payload: Object.keys(connectedClients) });
+            } else if (action == "DEAL") {
+                const cards = GameState.commonCards.length == 0 ? GameState.deal(3) : GameState.deal(1);
+                sendToAll({ action: "DEAL", payload: cards });
+            } else if (action == "HAND") {
+                GameState.initializeDeck();
+                const hands = GameState.dealHands(clientsInRound);
+                hands.forEach(hand => {
+                    connectedClients[hand.player].send(JSON.stringify({ action: "HAND", payload: hand.cards }));
+                });
+            }else if (action == "BET") {
+                endTurn();
+                turn++;
+                sendToAll({action: "POT", payload: pot})
+                takeTurn();
+            } else if (action == "FOLD") {
+                fold();
+            } else if (action == "RESTART") {
+                offsetTurn++;
+                roundStarted = false;
+                startRound();
+            }
+
+        });
+
+        webSocketClient.on('close', (webSocketClient) => {
+            let closedSocket = Object.keys(connectedClients).find((client) => {
+                return connectedClients[client]._closeCode == webSocketClient;
+            });
+
+
+            let closedInRound = clientsInRound.indexOf(closedSocket);
+
+            delete connectedClients[closedSocket];
+
+            if (roundStarted && closedInRound != -1) {
+                GameState.hands = GameState.hands.filter((hand) => {
+                    return hand.player != clientsInRound[closedSocket];
+                });
+                // remvome the player from the round
+                if (closedInRound === getTurnIndex()) {
+                    GameState.hands = GameState.hands.filter((hand) => {
+                        return hand.player != getPlayerTurn();
+                    });
+                    // remvome the player from the round
+                    clientsInRound.splice(getTurnIndex(), 1);
+                    if (turn !== 0) turn--; // Investigate why this line works
+                    takeTurn();
+                }
+                else {
+                    if (turnTimeout) clearTimeout(turnTimeout);
+                    clientsInRound.splice(closedInRound, 1);
+                }
+            }
+
+            sendToAll({ action: "CONNECTION", payload: Object.keys(connectedClients) });
+
+        });
+    });
+}
+
+module.exports = { connection };

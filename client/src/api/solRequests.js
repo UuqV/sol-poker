@@ -114,7 +114,6 @@ export const initializePot = async (wallet) => {
 }
 
 export const placeBet = async (wallet) => {
-  try {
     const connection = new Connection('https://api.devnet.solana.com');
 
     const program = await getProgram();
@@ -148,9 +147,6 @@ export const placeBet = async (wallet) => {
     const pot_solBalance = balance / 10 ** 9; // Convert lamports to SOL
     console.log(pot_solBalance);
     return pot_solBalance;
-  } catch (error) {
-    console.log("Error in  ", error)
-  }
 
 };
 
