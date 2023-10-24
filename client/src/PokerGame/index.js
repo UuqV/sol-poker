@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { dealCard, determineWinner, fold, bet } from '../state/actions';
+import { fold, bet } from '../state/actions';
+
 import SolBalance from '../SolBalance';
-import Table from '../PokerTable';
+import PokerTable from '../PokerTable';
 import OtherPlayer from '../OtherPlayers';
 import Player from '../Player';
 import './PokerGame.css';
 import { connect } from 'react-redux';
 
-const PokerGame = ({ opponents, table, player }) => {
+const PokerGame = ({ opponents, table, player, winner }) => {
   const { wallet, hand, isTurn, balance } = player;
   const { cards } = table;
 
+
   return (
     <div className="poker-game">
-      <Table cards={cards} potBalance={table.pot}/>
-      <OtherPlayer opponents={opponents} />
+      <PokerTable cards={cards} potBalance={table.pot}/>
+      <OtherPlayer opponents={opponents} winner={winner} />
       <Player hand={hand} />
       <div className="player-bottom-bar">
         <div className="buttons-container">
@@ -28,7 +30,6 @@ const PokerGame = ({ opponents, table, player }) => {
         </div>
         <SolBalance userName="Player" balance={balance} />
       </div>
-      
     </div>
   );
 };
@@ -38,6 +39,7 @@ const mapStateToProps = (state) => {
     opponents: state.opponents,
     table: state.table,
     player: state.player,
+    winner: state.winner,
   }
 }
 

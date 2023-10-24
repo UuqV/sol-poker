@@ -44,6 +44,7 @@ const connection = (server) => {
 
     const takeTurn = () => {
         if (clientsInRound.length == 1) {
+            sendToAll({ action: "ANNOUNCE_WINNER", payload: clientsInRound[0] });
             connectedClients[clientsInRound[0]].send(JSON.stringify({ action: "WINNER" }));
             offsetTurn++;
             roundStarted = false;
@@ -59,7 +60,9 @@ const connection = (server) => {
             startTurn();
         } else {// GameState.commonCards.length==5
             offsetTurn++;
-            connectedClients[GameState.determineWinner()].send(JSON.stringify({ action: "WINNER" }));
+            winner = GameState.determineWinner();
+            sendToAll({ action: "ANNOUNCE_WINNER", payload: winner });
+            connectedClients[winner].send(JSON.stringify({ action: "WINNER" }));
             roundStarted = false;
             startRound();
         }
